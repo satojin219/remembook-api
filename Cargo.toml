@@ -3,4 +3,60 @@ name = "remembook-api"
 version = "0.1.0"
 edition = "2021"
 
+
+[[bin]]
+name = "app"
+path = "src/bin/app.rs"
+
+
+
+[workspace]
+member = ["api","kernel","adapter","shared","registry"]
+
+[workspace.dependencies]
+adapter = { path = "./adapter" }
+api = { path = "./api" }
+shared = { path = "./shared" }
+registry = { path = "./registry" }
+kernel = { path = "./kernel" }
+
+axum = { version = "0.7.9", features = ["macros"] }
+sqlx = { version = "0.7.3", features = ["runtime-tokio", "uuid", "chrono", "macros", "postgres", "migrate"] }
+tokio = { version = "1.42.0", features = ["full"] }
+rstest = "0.23.0"
+async-trait = "0.1.74"
+derive-new = "0.6.0"
+anyhow = "1.0.75"
+thiserror = "2.0.9"
+bcrypt = "0.16.0"
+uuid = { version = "1.4.0", features = ["v4", "serde"] }
+garde = "0.21.0"
+tracing = "0.1.41"
+secrecy = "0.10.3"
+strum = { version = "0.26.2", features = ["derive"] }
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tracing-opentelemetry = "0.28.0"
+opentelemetry-jaeger = "0.22.0"
+redis = { version = "0.25.3", features = ["tokio-rustls-comp"] }
+serde = { version = "1.0.174", features = ["derive"] }
+axum-extra = { version = "0.9.3", features = ["typed-header"] }
+
+
 [dependencies]
+adapter.workspace = true
+api.workspace = true
+registry.workspace = true
+shared.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+axum.workspace = true
+sqlx.workspace = true
+thiserror.workspace = true
+bcrypt.workspace = true
+uuid.workspace = true
+garde.workspace = true
+tracing.workspace = true
+secrecy.workspace = true
+strum.workspace = true
+tracing-subscriber.workspace = true
+redis.workspace = true
