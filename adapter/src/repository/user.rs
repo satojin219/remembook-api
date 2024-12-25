@@ -17,7 +17,7 @@ pub struct UserRepositoryImpl {
 
 #[async_trait]
 impl UserRepository for UserRepositoryImpl {
-    async fn find_current_user(&self, current_user_id: UserId) -> AppResult<Option<User>> {
+    async fn find_current_user(&self, _current_user_id: UserId) -> AppResult<Option<User>> {
        todo!()
     }
 
@@ -51,7 +51,7 @@ impl UserRepository for UserRepositoryImpl {
         })
     }
 
-    async fn update_password(&self, event: UpdateUserPassword) -> AppResult<()> {
+    async fn update_password(&self, _event: UpdateUserPassword) -> AppResult<()> {
         todo!()
     }
 
