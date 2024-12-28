@@ -1,5 +1,6 @@
 use adapter::{database::connect_database_with, redis::RedisClient};
 use anyhow::{Ok, Result};
+use api::route::v1;
 use axum::{routing::get, Router};
 use registry::AppRegistryImpl;
 use shared::{
@@ -48,7 +49,8 @@ async fn bootstrap() -> Result<()> {
     let registry = Arc::new(AppRegistryImpl::new(pool, kv, app_config));
 
     let app = Router::new()
-        .route("/hello", get(|| async { "Hello, World!" }))
+        .merge(v1::routes())
+        .merge(auth::routes())
         .with_state(registry);
     let addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), 8080);
     let listener = TcpListener::bind(addr).await.unwrap();
