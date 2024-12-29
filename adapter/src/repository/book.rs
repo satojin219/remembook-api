@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use derive_new::new;
 use kernel::{
     model::{
         book::{
@@ -13,6 +14,7 @@ use shared::error::{AppError, AppResult};
 
 use crate::database::{model::book::BookRow, ConnectionPool};
 
+#[derive(new)]
 pub struct BookRepositoryImpl {
     db: ConnectionPool,
 }
@@ -51,12 +53,9 @@ impl BookRepository for BookRepositoryImpl {
         .map_err(AppError::SpecificOperationError)?;
 
         match row {
-            Some(r) => {
-                Ok(Some(r.into_book()))
-            }
+            Some(r) => Ok(Some(r.into_book())),
             None => Ok(None),
         }
-        
     }
 
     async fn create_book(&self, event: CreateBook) -> AppResult<()> {

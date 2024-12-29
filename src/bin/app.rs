@@ -1,7 +1,7 @@
 use adapter::{database::connect_database_with, redis::RedisClient};
 use anyhow::{Ok, Result};
-use api::route::v1;
-use axum::{routing::get, Router};
+use api::route::{auth, v1};
+use axum::{http::Method, routing::get, Router};
 use registry::AppRegistryImpl;
 use shared::{
     config::AppConfig,
@@ -12,6 +12,12 @@ use std::{
     sync::Arc,
 };
 use tokio::net::TcpListener;
+use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
+use tower_http::{
+    cors::{self, CorsLayer},
+    LatencyUnit,
+};
+use tracing::Level;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
@@ -51,10 +57,27 @@ async fn bootstrap() -> Result<()> {
     let app = Router::new()
         .merge(v1::routes())
         .merge(auth::routes())
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                .on_request(DefaultOnRequest::new().level(Level::INFO))
+                .on_response(
+                    DefaultOnResponse::new()
+                        .level(Level::INFO)
+                        .latency_unit(LatencyUnit::Millis),
+                ),
+        )
         .with_state(registry);
     let addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), 8080);
     let listener = TcpListener::bind(addr).await.unwrap();
 
     axum::serve(listener, app).await.unwrap();
     Ok(())
+}
+
+fn cors() -> CorsLayer {
+    CorsLayer::new()
+        .allow_headers(cors::Any)
+        .allow_methods(vec![Method::GET, Method::POST, Method::PUT, Method::DELETE])
+        .allow_origin(cors::Any)
 }

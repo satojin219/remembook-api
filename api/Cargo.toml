@@ -10,3 +10,5 @@ shared.workspace = true
 kernel.workspace = true
 axum-extra.workspace = true
 serde.workspace = true
+garde.workspace = true
+derive-new.workspace = true

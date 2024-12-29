@@ -1,7 +1,13 @@
+use derive_new::new;
+use garde::Validate;
 use kernel::model::{
-    book::event::{CreateBook, UpdateBook},
+    book::{
+        event::{CreateBook, UpdateBook},
+        Book,
+    },
     id::BookId,
 };
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -12,8 +18,6 @@ pub struct CreateBookRequest {
     pub author: String,
     #[garde(length(min = 1))]
     pub url: String,
-    #[garde(length(min = 1))]
-    pub title: String,
 }
 
 impl From<CreateBookRequest> for CreateBook {
@@ -37,17 +41,9 @@ pub struct UpdateBookRequest {
     pub url: String,
 }
 
-impl From<UpdateBookRequest> for UpdateBook {
+impl From<UpdateBookRequestWithIds> for UpdateBook {
     fn from(value: UpdateBookRequestWithIds) -> Self {
-        let UpdateBookRequestWithIds(
-            book_id,
-            UpdateBook {
-                book_id,
-                title,
-                url,
-                author,
-            },
-        ) = value;
+        let UpdateBookRequestWithIds(book_id, UpdateBookRequest { title, url, author }) = value;
         Self {
             book_id,
             title,
@@ -81,4 +77,9 @@ impl From<Book> for BookResponse {
             url,
         }
     }
+}
+
+#[derive(Serialize)]
+pub struct BooksResponse {
+    pub books: Vec<BookResponse>,
 }

@@ -4,13 +4,18 @@ use axum::{
     Json,
 };
 use garde::Validate;
-use kernel::model::{book::event::{CreateBook, DeleteBook}, id::BookId};
+use kernel::model::{
+    book::event::{CreateBook, DeleteBook},
+    id::BookId,
+};
 use registry::AppRegistry;
-use shared::error::AppResult;
+use shared::error::{AppError, AppResult};
 
 use crate::{
     extractor::AuthorizedUser,
-    model::book::{BookResponse, CreateBookRequest, UpdateBookRequest, UpdateBookRequestWithIds},
+    model::book::{
+        BookResponse, BooksResponse, CreateBookRequest, UpdateBookRequest, UpdateBookRequestWithIds,
+    },
 };
 
 pub async fn register_book(
@@ -30,16 +35,19 @@ pub async fn register_book(
 pub async fn show_book_list(
     _user: AuthorizedUser,
     State(registry): State<AppRegistry>,
-) -> AppResult<Json<BookResponse>> {
-    registry
+) -> AppResult<Json<BooksResponse>> {
+    let books = registry
         .book_repository()
         .fetch_all()
-        .await
+        .await?
+        .into_iter()
         .map(BookResponse::from)
-        .map(Json)
+        .collect::<Vec<_>>();
+
+    Ok(Json(BooksResponse { books }))
 }
 
-pub async fn show_book_list(
+pub async fn show_book(
     _user: AuthorizedUser,
     Path(book_id): Path<BookId>,
     State(registry): State<AppRegistry>,
@@ -48,12 +56,9 @@ pub async fn show_book_list(
         .book_repository()
         .fetch_by_id(book_id)
         .await
-        .map(BookResponse::from)
-        .and_then(|bc| match bc {
-            Some(bc) => Ok(Json(bc.into())),
-            None => Err(AppError::EntityNotFound(
-                "The specific book was not found".to_string(),
-            )),
+        .and_then(|opt_book| match opt_book {
+            Some(book) => Ok(Json(BookResponse::from(book))),
+            None => Err(AppError::EntityNotFound("Book not found".to_string())),
         })
 }
 
@@ -63,7 +68,8 @@ pub async fn update_book(
     State(registry): State<AppRegistry>,
     Json(req): Json<UpdateBookRequest>,
 ) -> AppResult<StatusCode> {
-    let update_book = UpdateBookRequestWithIds(book_id, req);
+    req.validate(&())?;
+    let update_book = UpdateBookRequestWithIds::new(book_id, req);
     registry
         .book_repository()
         .update_book(update_book.into())
