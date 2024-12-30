@@ -23,6 +23,12 @@ services:
       JAEGER_PORT: ${JAEGER_PORT}
     depends_on:
       - postgres
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - ${REDIS_PORT_OUTER}:${REDIS_PORT_INNER}
 
   postgres:
     image: postgres:15

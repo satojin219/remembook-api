@@ -1,4 +1,4 @@
-pub mod handler;
-pub mod route;
-pub mod model;
 pub mod extractor;
+pub mod handler;
+pub mod model;
+pub mod route;

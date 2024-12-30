@@ -7,7 +7,9 @@ use kernel::model::user::{
 };
 use kernel::repository::user::UserRepository;
 use shared::error::{AppError, AppResult};
+use sqlx::query_as;
 
+use crate::database::model::user::UserRow;
 use crate::database::ConnectionPool;
 
 #[derive(new)]
@@ -18,7 +20,21 @@ pub struct UserRepositoryImpl {
 #[async_trait]
 impl UserRepository for UserRepositoryImpl {
     async fn find_current_user(&self, _current_user_id: UserId) -> AppResult<Option<User>> {
-       todo!()
+        let row = sqlx::query_as!(
+            UserRow,
+            r#"
+        SELECT user_id,name,email,created_at, updated_at FROM users WHERE user_id = $1
+        "#,
+            _current_user_id as _,
+        )
+        .fetch_optional(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        match row {
+            Some(r) => Ok(Some(User::try_from(r)?)),
+            None => Ok(None),
+        }
     }
 
     async fn create(&self, event: CreateUser) -> AppResult<User> {

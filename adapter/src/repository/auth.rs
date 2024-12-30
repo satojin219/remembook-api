@@ -58,6 +58,27 @@ impl AuthRepository for AuthRepositoryImpl {
         Ok(user_item.user_id)
     }
 
+    async fn register_user(&self, name: &str, email: &str, password: &str) -> AppResult<UserId> {
+        let user_id = UserId::new();
+        let hashed_password = hash_password(&password)?;
+
+        sqlx::query!(
+            r#"
+        INSERT INTO users(user_id,name,email,password_hash)
+        VALUES($1,$2,$3,$4)
+        "#,
+            user_id as _,
+            name,
+            email,
+            hashed_password
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        Ok(user_id)
+    }
+
     async fn create_token(&self, event: CreateToken) -> AppResult<AccessToken> {
         let (key, value) = from(event);
         self.kv.set_ex(&key, &value, self.ttl).await?;
@@ -68,4 +89,8 @@ impl AuthRepository for AuthRepositoryImpl {
         let key: AuthorizationKey = access_token.into();
         self.kv.delete(&key).await
     }
+}
+
+fn hash_password(password: &str) -> AppResult<String> {
+    bcrypt::hash(password, bcrypt::DEFAULT_COST).map_err(AppError::from)
 }

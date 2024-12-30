@@ -5,8 +5,27 @@ use shared::error::AppResult;
 
 use crate::{
     extractor::AuthorizedUser,
-    model::auth::{AccessTokenResponse, LoginRequest},
+    model::auth::{AccessTokenResponse, LoginRequest, SignupRequest},
 };
+
+pub async fn signup(
+    State(registry): State<AppRegistry>,
+    Json(req): Json<SignupRequest>,
+) -> AppResult<Json<AccessTokenResponse>> {
+    let user_id = registry
+        .auth_repository()
+        .register_user(&req.name, &req.email, &req.password)
+        .await?;
+    let access_token = registry
+        .auth_repository()
+        .create_token(CreateToken::new(user_id))
+        .await?;
+
+    Ok(Json(AccessTokenResponse {
+        user_id,
+        access_token: access_token.0,
+    }))
+}
 
 pub async fn login(
     State(registry): State<AppRegistry>,
