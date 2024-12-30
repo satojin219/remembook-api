@@ -1,0 +1,171 @@
+openapi: 3.0.0
+info:
+  title: Book Summary and Question API
+  version: 1.0.0
+  description: API for managing book summaries, questions, and user answers.
+paths:
+  /books/{book_id}:
+    get:
+      summary: 書籍の情報と問題を単体取得
+      parameters:
+        - name: book_id
+          in: path
+          required: true
+          description: ID of the book to retrieve
+          schema:
+            type: string
+      responses:
+        200:
+          description: Book and questions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  author:
+                    type: string
+                  link:
+                    type: string
+                  image:
+                    type: string
+                  question:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_id:
+                          type: string
+                        body:
+                          type: string
+  /books:
+    get:
+      summary: 本を一覧取得
+      responses:
+        200:
+          description: List of books retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    book_id:
+                      type: string
+                    title:
+                      type: string
+                    author:
+                      type: string
+                    image:
+                      type: string
+  /summary:
+    post:
+      summary: 本の要約を送信。問題を生成
+      requestBody:
+        description: Summary creation payload
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: string
+      responses:
+        201:
+          description: Summary and questions created successfully
+  /summary/{summary_id}:
+    put:
+      summary: 本の要約を更新。問題を再生成
+      parameters:
+        - name: summary_id
+          in: path
+          required: true
+          description: ID of the summary to update
+          schema:
+            type: string
+      requestBody:
+        description: Updated summary payload
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: string
+      responses:
+        204:
+          description: Summary updated successfully
+    delete:
+      summary: 本の要約を削除
+      parameters:
+        - name: summary_id
+          in: path
+          required: true
+          description: ID of the summary to delete
+          schema:
+            type: string
+      responses:
+        204:
+          description: Summary deleted successfully
+    get:
+      summary: 本の要約が答えになる質問を取得
+      parameters:
+        - name: summary_id
+          in: path
+          required: true
+          description: ID of the summary to retrieve questions for
+          schema:
+            type: string
+      responses:
+        200:
+          description: Questions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    question_id:
+                      type: string
+                    body:
+                      type: string
+    post:
+      summary: 質問に対する回答を送信。要約との類似度を返す
+      parameters:
+        - name: summary_id
+          in: path
+          required: true
+          description: ID of the summary for which the answer is submitted
+          schema:
+            type: string
+      requestBody:
+        description: Answer payload
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_answer:
+                  type: string
+      responses:
+        201:
+          description: Answer submitted and embedding result retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  score:
+                    type: number
+                  user_answer:
+                    type: string
+                  summary:
+                    type: string
+                  question:
+                    type: string
