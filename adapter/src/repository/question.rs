@@ -52,7 +52,7 @@ impl QuestionRepository for QuestionRepositoryImpl {
         Ok(())
     }
     async fn update_question(&self, event: UpdateQuestion) -> AppResult<()> {
-        sqlx::query!(
+        let row = sqlx::query!(
             r#"
                 UPDATE questions SET question_text = $1
             "#,
@@ -61,6 +61,12 @@ impl QuestionRepository for QuestionRepositoryImpl {
         .execute(self.db.inner_ref())
         .await
         .map_err(AppError::SpecificOperationError)?;
+
+        if row.rows_affected() < 1 {
+            return Err(AppError::EntityNotFound(
+                "Specified question not found".into(),
+            ));
+        }
         Ok(())
     }
 }
