@@ -61,3 +61,7 @@ macro_rules! define_id {
 define_id!(BookId);
 define_id!(UserId);
 define_id!(CheckoutId);
+define_id!(SummaryId);
+define_id!(QuestionId);
+define_id!(ComparisonId);
+define_id!(AnswerId);
