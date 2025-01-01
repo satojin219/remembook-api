@@ -1,6 +1,3 @@
--- まず embedding_comparisons は user_answers を参照
-DROP TABLE IF EXISTS embedding_comparisons;
-
 -- user_answers は questions と users を参照
 DROP TABLE IF EXISTS user_answers;
 

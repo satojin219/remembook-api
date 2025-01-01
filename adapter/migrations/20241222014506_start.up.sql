@@ -50,24 +50,14 @@ CREATE TABLE IF NOT EXISTS questions (
 );
 CREATE INDEX idx_questions_summary_created ON questions(summary_id, created_at);
 
--- 質問に対する回答
+-- 質問に対する回答とユーザーの書いた要約と回答を比較した結果
 CREATE TABLE IF NOT EXISTS user_answers (
   answer_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   question_id UUID NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
   answer_text TEXT NOT NULL,
-  answered_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  score INTEGER CHECK (score >= 0 AND score <= 100),
   created_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
 );
 CREATE INDEX idx_user_answers_question ON user_answers(user_id, question_id);
-
--- ユーザーの書いた要約と回答を比較した結果
-CREATE TABLE IF NOT EXISTS embedding_comparisons (
-  comparison_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_answer_id UUID NOT NULL REFERENCES user_answers(answer_id) ON DELETE CASCADE,
-  score NUMERIC(5, 2) CHECK (score >= 0 AND score <= 100),
-  created_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  updated_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
-);
-CREATE INDEX idx_embedding_comparisons_answer ON embedding_comparisons(user_answer_id);

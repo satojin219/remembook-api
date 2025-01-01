@@ -1,3 +1,4 @@
+pub mod answer;
 pub mod auth;
 pub mod book;
 pub mod question;
