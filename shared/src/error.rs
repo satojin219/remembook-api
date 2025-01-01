@@ -21,6 +21,8 @@ pub enum AppError {
     BcryptError(#[from] bcrypt::BcryptError),
     #[error("{0}")]
     ConvertToUuidError(#[from] uuid::Error),
+    #[error("Open AI API error: {0}")]
+    OpenAIError(#[from] async_openai::error::OpenAIError),
     #[error("ログインに失敗しました")]
     UnauthenticatedError,
     #[error("認可情報が誤っています")]
@@ -46,6 +48,7 @@ impl IntoResponse for AppError {
             | AppError::NoRowsAffectedError(_)
             | AppError::KeyValueStoreError(_)
             | AppError::BcryptError(_)
+            | AppError::OpenAIError(_)
             | AppError::ConversionEntityError(_)) => {
                 tracing::error!(
                 error.cause_chain = ?e,

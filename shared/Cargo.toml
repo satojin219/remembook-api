@@ -15,3 +15,5 @@ bcrypt.workspace = true
 garde.workspace = true
 tracing.workspace = true
 redis.workspace = true
+async-openai.workspace = true
+tokio.workspace = true
