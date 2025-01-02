@@ -5,7 +5,7 @@ use async_openai::{
     config::OpenAIConfig,
     types::{
         ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
-        CreateChatCompletionRequestArgs, CreateEmbeddingRequestArgs, Embedding,
+        CreateChatCompletionRequestArgs, CreateEmbeddingRequestArgs,
     },
     Client,
 };
@@ -25,7 +25,35 @@ fn client() -> Client<OpenAIConfig> {
     let config = OpenAIConfig::new().with_api_key(api_key.unwrap());
     Client::with_config(config)
 }
-pub async fn embedding(input1: String, input2: String) -> AppResult<Vec<Embedding>> {
+
+fn cosine_similarity(vec_a: &[f32], vec_b: &[f32]) -> AppResult<i32> {
+    if vec_a.len() != vec_b.len() {
+        return Err(AppError::CosineSimilarityError(
+            "ベクトルの長さが一致しません。".to_string(),
+        ));
+    }
+
+    // ドット積を計算
+    let dot_product: f32 = vec_a.iter().zip(vec_b).map(|(a, b)| a * b).sum();
+
+    // ベクトルのノルムを計算
+    let norm_a: f32 = vec_a.iter().map(|a| a * a).sum::<f32>().sqrt();
+    let norm_b: f32 = vec_b.iter().map(|b| b * b).sum::<f32>().sqrt();
+
+    if norm_a == 0.0 || norm_b == 0.0 {
+        return Err(AppError::CosineSimilarityError(
+            "ノルムが0のため計算できません。".to_string(),
+        ));
+    }
+
+    // コサイン類似度を計算
+    let similarity = dot_product / (norm_a * norm_b);
+
+    // 類似度を整数に変換して返す（スケール：100倍して小数点以下切り捨て）
+    Ok((similarity * 100.0).round() as i32)
+}
+
+pub async fn embedding(input1: String, input2: String) -> AppResult<i32> {
     let request = CreateEmbeddingRequestArgs::default()
         .model(EMBEDDING_MODEL)
         .input([input1, input2])
@@ -38,7 +66,9 @@ pub async fn embedding(input1: String, input2: String) -> AppResult<Vec<Embeddin
         .await
         .map_err(AppError::OpenAIError)?;
 
-    Ok(response.data)
+    let similarity = cosine_similarity(&response.data[0].embedding, &response.data[1].embedding)?;
+
+    Ok(similarity)
 }
 
 pub async fn generate_question(user_answer: &str) -> AppResult<String> {

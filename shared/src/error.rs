@@ -23,6 +23,8 @@ pub enum AppError {
     ConvertToUuidError(#[from] uuid::Error),
     #[error("Open AI API error: {0}")]
     OpenAIError(#[from] async_openai::error::OpenAIError),
+    #[error("コサイン類似度計算中にエラーが発生しました。")]
+    CosineSimilarityError(String),
     #[error("ログインに失敗しました")]
     UnauthenticatedError,
     #[error("認可情報が誤っています")]
@@ -49,6 +51,7 @@ impl IntoResponse for AppError {
             | AppError::KeyValueStoreError(_)
             | AppError::BcryptError(_)
             | AppError::OpenAIError(_)
+            | AppError::CosineSimilarityError(_)
             | AppError::ConversionEntityError(_)) => {
                 tracing::error!(
                 error.cause_chain = ?e,
