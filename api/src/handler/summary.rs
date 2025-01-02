@@ -2,7 +2,7 @@ use crate::{
     extractor::AuthorizedUser,
     model::summary::{
         CreateQuestionRequest, CreateQuestionRequestWithIds, CreateSummaryRequest,
-        CreateSummaryRequestWithIds,
+        CreateSummaryRequestWithIds, UpdateSummaryRequest,
     },
 };
 use axum::{
@@ -13,8 +13,8 @@ use axum::{
 use garde::Validate;
 use kernel::model::{
     id::{BookId, SummaryId},
-    question::event::CreateQuestion,
-    summary::event::CreateSummary,
+    question::event::{CreateQuestion, UpdateQuestion},
+    summary::event::{CreateSummary, DeleteSummary, UpdateSummary},
 };
 use registry::AppRegistry;
 use shared::{error::AppResult, open_ai::generate_question};
@@ -52,4 +52,46 @@ pub async fn create_summary(
         .await?;
 
     Ok(StatusCode::CREATED)
+}
+
+pub async fn update_summary(
+    _user: AuthorizedUser,
+    Path((_book_id, summary_id)): Path<(BookId, SummaryId)>,
+    State(registry): State<AppRegistry>,
+    Json(req): Json<UpdateSummaryRequest>,
+) -> AppResult<StatusCode> {
+    req.validate(&())?;
+
+    registry
+        .summary_repository()
+        .update_summary(UpdateSummary {
+            summary_id,
+            summary_text: req.body.clone(),
+        })
+        .await?;
+
+    let question_text = generate_question(&req.body).await?;
+
+    registry
+        .question_repository()
+        .update_question(UpdateQuestion {
+            summary_id,
+            question_text,
+        })
+        .await?;
+
+    Ok(StatusCode::OK)
+}
+
+pub async fn delete_summary(
+    _user: AuthorizedUser,
+    Path(summary_id): Path<SummaryId>,
+    State(registry): State<AppRegistry>,
+) -> AppResult<StatusCode> {
+    registry
+        .summary_repository()
+        .delete_summary(DeleteSummary { summary_id })
+        .await?;
+
+    Ok(StatusCode::OK)
 }
