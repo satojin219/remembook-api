@@ -9,7 +9,7 @@ use kernel::{
 };
 use shared::error::{AppError, AppResult};
 
-use crate::database::ConnectionPool;
+use crate::database::{model::summary::SummaryRow, ConnectionPool};
 
 #[derive(new)]
 pub struct SummaryRepositoryImpl {
@@ -18,6 +18,25 @@ pub struct SummaryRepositoryImpl {
 
 #[async_trait]
 impl SummaryRepository for SummaryRepositoryImpl {
+    async fn get_by_id(&self, summary_id: SummaryId) -> AppResult<Option<String>> {
+        let row: Option<SummaryRow> = sqlx::query_as!(
+            SummaryRow,
+            r#"
+                SELECT summary_id, summary_text FROM summaries
+                WHERE summary_id = $1
+            "#,
+            summary_id as _,
+        )
+        .fetch_optional(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        match row {
+            Some(s) => Ok(Some(s.summary_text.into())),
+            None => Ok(None),
+        }
+    }
+
     async fn create_summary(&self, event: CreateSummary) -> AppResult<SummaryId> {
         let summary_id: SummaryId = sqlx::query!(
             r#"
