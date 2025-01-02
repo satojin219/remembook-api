@@ -1,8 +1,11 @@
 use crate::{
     extractor::AuthorizedUser,
-    model::summary::{
-        CreateQuestionRequest, CreateQuestionRequestWithIds, CreateSummaryRequest,
-        CreateSummaryRequestWithIds, UpdateSummaryRequest,
+    model::{
+        question::QuestionResponse,
+        summary::{
+            CreateQuestionRequest, CreateQuestionRequestWithIds, CreateSummaryRequest,
+            CreateSummaryRequestWithIds, UpdateSummaryRequest,
+        },
     },
 };
 use axum::{
@@ -17,7 +20,10 @@ use kernel::model::{
     summary::event::{CreateSummary, DeleteSummary, UpdateSummary},
 };
 use registry::AppRegistry;
-use shared::{error::AppResult, open_ai::generate_question};
+use shared::{
+    error::{AppError, AppResult},
+    open_ai::generate_question,
+};
 
 /// ユーザーが入力した要約を登録し、要約から質問を生成する。
 pub async fn create_summary(
@@ -94,4 +100,21 @@ pub async fn delete_summary(
         .await?;
 
     Ok(StatusCode::OK)
+}
+
+pub async fn get_question(
+    _user: AuthorizedUser,
+    Path(summary_id): Path<SummaryId>,
+    State(registry): State<AppRegistry>,
+) -> AppResult<Json<QuestionResponse>> {
+    registry
+        .question_repository()
+        .get_by_summary_id(summary_id)
+        .await
+        .and_then(|q| match q {
+            Some(q) => Ok(Json(q.into())),
+            None => Err(AppError::EntityNotFound(
+                "The specific question was not found".to_string(),
+            )),
+        })
 }
