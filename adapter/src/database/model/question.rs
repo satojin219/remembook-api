@@ -4,11 +4,15 @@ pub struct QuestionRow {
     pub question_text: String,
 }
 
-impl QuestionRow {
-    pub fn into_question(self) -> Question {
+impl From<QuestionRow> for Question {
+    fn from(value: QuestionRow) -> Self {
+        let QuestionRow {
+            question_id,
+            question_text,
+        } = value;
         Question {
-            id: self.question_id,
-            body: self.question_text,
+            id: question_id,
+            body: question_text,
         }
     }
 }

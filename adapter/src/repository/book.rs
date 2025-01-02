@@ -3,16 +3,19 @@ use derive_new::new;
 use kernel::{
     model::{
         book::{
-            event::{CreateBook, DeleteBook, UpdateBook},
-            Book,
+            event::{CreateBook, DeleteBook},
+            Book, BookDetail,
         },
-        id::BookId,
+        id::{BookId, UserId},
     },
     repository::book::BookRepository,
 };
 use shared::error::{AppError, AppResult};
 
-use crate::database::{model::book::BookRow, ConnectionPool};
+use crate::database::{
+    model::book::{BookDetailRow, BookRow},
+    ConnectionPool,
+};
 
 #[derive(new)]
 pub struct BookRepositoryImpl {
@@ -21,23 +24,81 @@ pub struct BookRepositoryImpl {
 
 #[async_trait]
 impl BookRepository for BookRepositoryImpl {
-    async fn fetch_all(&self) -> AppResult<Vec<Book>> {
-        todo!()
-    }
+    async fn get_by_user_id(&self, user_id: UserId) -> AppResult<Vec<Book>> {
+        let res: Vec<BookRow> = sqlx::query_as!(
+            BookRow,
+            r#"
+                SELECT book_id, title, image_url FROM books
+            "#,
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+        // BookRow -> Book の変換
+        let books = res
+            .into_iter()
+            .map(|row| row.into_book()) // ここで `From<BookRow> for Book` を実装することを想定
+            .collect();
 
-    async fn fetch_by_id(&self, _book_id: BookId) -> AppResult<Option<Book>> {
-        todo!()
+        Ok(books)
     }
+    async fn get_by_book_id(&self, book_id: BookId) -> AppResult<Option<BookDetail>> {
+        let row: Option<BookDetailRow> = sqlx::query_as!(
+            BookDetailRow,
+            r#"
+        SELECT
+            book_id,
+            title,
+            author,
+            image_url,
+            link_url
+        FROM books
+        WHERE book_id = $1
+            "#,
+            book_id as _
+        )
+        .fetch_optional(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
 
-    async fn create_book(&self, _event: CreateBook) -> AppResult<()> {
-        todo!()
+        match row {
+            Some(r) => Ok(Some(r.into_book_detail())),
+            None => Ok(None),
+        }
     }
-
-    async fn update_book(&self, _event: UpdateBook) -> AppResult<()> {
-        todo!()
+    async fn create_book(&self, event: CreateBook, user_id: UserId) -> AppResult<()> {
+        sqlx::query!(
+            r#"
+                INSERT INTO books(title, author, image_url, link_url, user_id)
+                VALUES($1,$2,$3,$4,$5)
+            "#,
+            event.title,
+            event.author,
+            event.image_url,
+            event.link_url,
+            user_id as _
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+        Ok(())
     }
+    async fn delete_book(&self, event: DeleteBook) -> AppResult<()> {
+        let row = sqlx::query!(
+            r#"
+                DELETE FROM books
+                WHERE book_id = $1
+            "#,
+            event.book_id as _,
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
 
-    async fn delete_book(&self, _event: DeleteBook) -> AppResult<()> {
-        todo!()
+        if row.rows_affected() < 1 {
+            return Err(AppError::EntityNotFound("Specified book not found".into()));
+        }
+
+        Ok(())
     }
 }

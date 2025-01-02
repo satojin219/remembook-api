@@ -1,13 +1,12 @@
 use derive_new::new;
 use garde::Validate;
 use kernel::model::{
-    book::{
-        event::{CreateBook, UpdateBook},
-        Book,
-    },
-    id::BookId,
+    book::{event::CreateBook, Book, BookDetail},
+    id::{BookId, QuestionId},
 };
 use serde::{Deserialize, Serialize};
+
+use super::question::QuestionResponse;
 
 #[derive(Debug, Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -16,39 +15,25 @@ pub struct CreateBookRequest {
     pub title: String,
     #[garde(length(min = 1))]
     pub author: String,
-    #[garde(length(min = 1))]
-    pub url: String,
+    #[garde(url)]
+    pub image_url: String,
+    #[garde(url)]
+    pub link_url: String,
 }
 
 impl From<CreateBookRequest> for CreateBook {
     fn from(value: CreateBookRequest) -> Self {
-        let CreateBookRequest { title, author, url } = value;
-        Self { title, author, url }
-    }
-}
-
-#[derive(new)]
-pub struct UpdateBookRequestWithIds(BookId, UpdateBookRequest);
-
-#[derive(Debug, Deserialize, Validate)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateBookRequest {
-    #[garde(length(min = 1))]
-    pub title: String,
-    #[garde(length(min = 1))]
-    pub author: String,
-    #[garde(length(min = 1))]
-    pub url: String,
-}
-
-impl From<UpdateBookRequestWithIds> for UpdateBook {
-    fn from(value: UpdateBookRequestWithIds) -> Self {
-        let UpdateBookRequestWithIds(book_id, UpdateBookRequest { title, url, author }) = value;
-        Self {
-            book_id,
+        let CreateBookRequest {
             title,
-            url,
             author,
+            image_url,
+            link_url,
+        } = value;
+        Self {
+            title,
+            author,
+            image_url,
+            link_url,
         }
     }
 }
@@ -58,8 +43,7 @@ impl From<UpdateBookRequestWithIds> for UpdateBook {
 pub struct BookResponse {
     pub id: BookId,
     pub title: String,
-    pub author: String,
-    pub url: String,
+    pub image_url: String,
 }
 
 impl From<Book> for BookResponse {
@@ -67,14 +51,12 @@ impl From<Book> for BookResponse {
         let Book {
             id,
             title,
-            author,
-            url,
+            image_url,
         } = value;
         Self {
             id,
             title,
-            author,
-            url,
+            image_url,
         }
     }
 }
@@ -82,4 +64,40 @@ impl From<Book> for BookResponse {
 #[derive(Serialize)]
 pub struct BooksResponse {
     pub books: Vec<BookResponse>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BookDetailResponse {
+    pub id: BookId,
+    pub title: String,
+    pub author: String,
+    pub image_url: String,
+    pub link_url: String,
+}
+
+impl From<BookDetail> for BookDetailResponse {
+    fn from(book_value: BookDetail) -> Self {
+        let BookDetail {
+            id,
+            title,
+            image_url,
+            author,
+            link_url,
+        } = book_value;
+        Self {
+            id,
+            title,
+            image_url,
+            author,
+            link_url,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ShowBookResponse {
+    pub book: BookDetailResponse,
+    pub questions: Vec<QuestionResponse>,
 }

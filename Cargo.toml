@@ -31,7 +31,7 @@ anyhow = "1.0.75"
 thiserror = "2.0.9"
 bcrypt = "0.16.0"
 uuid = { version = "1.4.0", features = ["v4", "serde"] }
-garde = { version = "0.18.0", features = ["derive", "email"] }
+garde = { version = "0.18.0", features = ["derive", "email","url"] }
 tracing = "0.1.41"
 secrecy = "0.10.3"
 strum = { version = "0.26.2", features = ["derive"] }

@@ -2,8 +2,11 @@ use std::sync::Arc;
 
 use adapter::database::ConnectionPool;
 use adapter::redis::RedisClient;
+use adapter::repository::answer::AnswerRepositoryImpl;
 use adapter::repository::auth::AuthRepositoryImpl;
 use adapter::repository::book::BookRepositoryImpl;
+use adapter::repository::question::QuestionRepositoryImpl;
+use adapter::repository::summary::SummaryRepositoryImpl;
 use adapter::repository::user::UserRepositoryImpl;
 use kernel::repository::answer::AnswerRepository;
 use kernel::repository::auth::AuthRepository;

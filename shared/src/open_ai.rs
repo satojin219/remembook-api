@@ -17,8 +17,7 @@ fn client() -> Client<OpenAIConfig> {
         Ok(key) => Some(key),
         Err(_) => {
             println!(
-                "{}: {}",
-                "OPEN_AI_API_KEY is not set", "Please set the OPEN_AI_API_KEY environment variable"
+                "OPEN_AI_API_KEY is not set Please set the OPEN_AI_API_KEY environment variable"
             );
             process::exit(1);
         }

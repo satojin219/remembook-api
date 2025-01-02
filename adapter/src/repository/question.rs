@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use derive_new::new;
 use kernel::{
     model::{
-        id::SummaryId,
+        id::{BookId, SummaryId},
         question::{
             event::{CreateQuestion, UpdateQuestion},
             Question,
@@ -34,9 +34,23 @@ impl QuestionRepository for QuestionRepositoryImpl {
         .map_err(AppError::SpecificOperationError)?;
 
         match row {
-            Some(r) => Ok(Some(r.into_question())),
+            Some(r) => Ok(Some(r.into())),
             None => Ok(None),
         }
+    }
+    async fn get_list_by_book_id(&self, book_id: BookId) -> AppResult<Vec<Question>> {
+        let rows: Vec<QuestionRow> = sqlx::query_as!(
+            QuestionRow,
+            r#"
+        SELECT question_id, question_text FROM questions WHERE book_id = $1
+            "#,
+            book_id as _
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        Ok(rows.into_iter().map(Question::from).collect())
     }
     async fn create_question(&self, event: CreateQuestion) -> AppResult<()> {
         sqlx::query!(

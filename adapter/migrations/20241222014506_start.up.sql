@@ -20,9 +20,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS books (
   book_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(255) NOT NULL,
-  author VARCHAR(255),
-  image_url TEXT,
-  link_url TEXT,
+  author VARCHAR(255) NOT NULL,
+  image_url TEXT NOT NULL,
+  link_url TEXT NOT NULL,
   user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
   created_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS questions (
   question_text TEXT NOT NULL,
   created_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+  book_id UUID NOT NULL REFERENCES books(book_id) ON DELETE CASCADE,
   summary_id UUID NOT NULL REFERENCES summaries(summary_id) ON DELETE CASCADE
 );
 CREATE INDEX idx_questions_summary_created ON questions(summary_id, created_at);

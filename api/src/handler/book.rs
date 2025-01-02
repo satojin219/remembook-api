@@ -13,8 +13,11 @@ use shared::error::{AppError, AppResult};
 
 use crate::{
     extractor::AuthorizedUser,
-    model::book::{
-        BookResponse, BooksResponse, CreateBookRequest, UpdateBookRequest, UpdateBookRequestWithIds,
+    model::{
+        book::{
+            BookDetailResponse, BookResponse, BooksResponse, CreateBookRequest, ShowBookResponse,
+        },
+        question::QuestionResponse,
     },
 };
 
@@ -27,18 +30,18 @@ pub async fn register_book(
 
     registry
         .book_repository()
-        .create_book(req.into())
+        .create_book(req.into(), user.id())
         .await
         .map(|_| StatusCode::CREATED)
 }
 
 pub async fn show_book_list(
-    _user: AuthorizedUser,
+    user: AuthorizedUser,
     State(registry): State<AppRegistry>,
 ) -> AppResult<Json<BooksResponse>> {
     let books = registry
         .book_repository()
-        .fetch_all()
+        .get_by_user_id(user.id())
         .await?
         .into_iter()
         .map(BookResponse::from)
@@ -47,34 +50,30 @@ pub async fn show_book_list(
     Ok(Json(BooksResponse { books }))
 }
 
+#[axum::debug_handler]
 pub async fn show_book(
     _user: AuthorizedUser,
     Path(book_id): Path<BookId>,
     State(registry): State<AppRegistry>,
-) -> AppResult<Json<BookResponse>> {
-    registry
+) -> AppResult<Json<ShowBookResponse>> {
+    let book = registry
         .book_repository()
-        .fetch_by_id(book_id)
-        .await
-        .and_then(|opt_book| match opt_book {
-            Some(book) => Ok(Json(BookResponse::from(book))),
-            None => Err(AppError::EntityNotFound("Book not found".to_string())),
-        })
-}
+        .get_by_book_id(book_id)
+        .await?
+        .unwrap();
 
-pub async fn update_book(
-    _user: AuthorizedUser,
-    Path(book_id): Path<BookId>,
-    State(registry): State<AppRegistry>,
-    Json(req): Json<UpdateBookRequest>,
-) -> AppResult<StatusCode> {
-    req.validate(&())?;
-    let update_book = UpdateBookRequestWithIds::new(book_id, req);
-    registry
-        .book_repository()
-        .update_book(update_book.into())
-        .await
-        .map(|_| StatusCode::OK)
+    let questions = registry
+        .question_repository()
+        .get_list_by_book_id(book_id)
+        .await?
+        .into_iter()
+        .map(QuestionResponse::from)
+        .collect::<Vec<_>>();
+
+    Ok(Json(ShowBookResponse {
+        book: BookDetailResponse::from(book),
+        questions,
+    }))
 }
 
 pub async fn delete_book(
