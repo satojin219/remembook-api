@@ -1,4 +1,4 @@
-use super::{id::BookId, question::Question};
+use super::id::BookId;
 
 pub mod event;
 

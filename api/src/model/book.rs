@@ -1,8 +1,7 @@
-use derive_new::new;
 use garde::Validate;
 use kernel::model::{
     book::{event::CreateBook, Book, BookDetail},
-    id::{BookId, QuestionId},
+    id::BookId,
 };
 use serde::{Deserialize, Serialize};
 

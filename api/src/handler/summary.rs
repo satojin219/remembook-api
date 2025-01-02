@@ -18,8 +18,8 @@ use garde::Validate;
 use kernel::model::{
     answer::event::CreateAnswer,
     id::{BookId, QuestionId, SummaryId},
-    question::event::{CreateQuestion, UpdateQuestion},
-    summary::event::{CreateSummary, DeleteSummary, UpdateSummary},
+    question::event::UpdateQuestion,
+    summary::event::{DeleteSummary, UpdateSummary},
 };
 use registry::AppRegistry;
 use shared::{
@@ -143,7 +143,7 @@ pub async fn answer_question(
             score,
         })
         .await?;
-      
+
     Ok(Json(UserAnswerResponse {
         score,
         summary: summary.unwrap(),

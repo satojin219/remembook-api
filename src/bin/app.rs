@@ -1,7 +1,7 @@
 use adapter::{database::connect_database_with, redis::RedisClient};
 use anyhow::{Ok, Result};
 use api::route::{auth, v1};
-use axum::{http::Method, routing::get, Router};
+use axum::{http::Method, Router};
 use registry::AppRegistryImpl;
 use shared::{
     config::AppConfig,

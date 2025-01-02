@@ -24,7 +24,7 @@ pub struct BookRepositoryImpl {
 
 #[async_trait]
 impl BookRepository for BookRepositoryImpl {
-    async fn get_by_user_id(&self, user_id: UserId) -> AppResult<Vec<Book>> {
+    async fn get_by_user_id(&self, _user_id: UserId) -> AppResult<Vec<Book>> {
         let res: Vec<BookRow> = sqlx::query_as!(
             BookRow,
             r#"

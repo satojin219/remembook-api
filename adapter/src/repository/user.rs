@@ -7,7 +7,6 @@ use kernel::model::user::{
 };
 use kernel::repository::user::UserRepository;
 use shared::error::{AppError, AppResult};
-use sqlx::query_as;
 
 use crate::database::model::user::UserRow;
 use crate::database::ConnectionPool;

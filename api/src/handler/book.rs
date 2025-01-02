@@ -1,15 +1,12 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, State},
     http::StatusCode,
     Json,
 };
 use garde::Validate;
-use kernel::model::{
-    book::event::{CreateBook, DeleteBook},
-    id::BookId,
-};
+use kernel::model::{book::event::DeleteBook, id::BookId};
 use registry::AppRegistry;
-use shared::error::{AppError, AppResult};
+use shared::error::AppResult;
 
 use crate::{
     extractor::AuthorizedUser,

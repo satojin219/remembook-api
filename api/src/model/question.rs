@@ -1,4 +1,3 @@
-use garde::Validate;
 use kernel::model::{id::QuestionId, question::Question};
 use serde::{Deserialize, Serialize};
 
