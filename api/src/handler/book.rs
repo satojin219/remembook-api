@@ -50,7 +50,6 @@ pub async fn show_book_list(
     Ok(Json(BooksResponse { books }))
 }
 
-#[axum::debug_handler]
 pub async fn show_book(
     _user: AuthorizedUser,
     Path(book_id): Path<BookId>,

@@ -55,10 +55,13 @@ impl QuestionRepository for QuestionRepositoryImpl {
     async fn create_question(&self, event: CreateQuestion) -> AppResult<()> {
         sqlx::query!(
             r#"
-                INSERT INTO questions(question_text)
-                VALUES($1)
+                INSERT INTO questions(question_text,user_id,book_id,summary_id)
+                VALUES($1,$2,$3,$4)
             "#,
-            event.question_text
+            event.question_text,
+            event.user_id as _,
+            event.book_id as _,
+            event.summary_id as _
         )
         .execute(self.db.inner_ref())
         .await

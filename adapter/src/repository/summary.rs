@@ -18,18 +18,24 @@ pub struct SummaryRepositoryImpl {
 
 #[async_trait]
 impl SummaryRepository for SummaryRepositoryImpl {
-    async fn create_summary(&self, event: CreateSummary) -> AppResult<()> {
-        sqlx::query!(
+    async fn create_summary(&self, event: CreateSummary) -> AppResult<SummaryId> {
+        let summary_id: SummaryId = sqlx::query!(
             r#"
-                INSERT INTO summaries(summary_text)
-                VALUES($1)
-            "#,
-            event.summary_text
+            INSERT INTO summaries (summary_text, user_id, book_id)
+            VALUES ($1, $2, $3)
+            RETURNING summary_id
+        "#,
+            event.summary_text,
+            event.user_id as _,
+            event.book_id as _
         )
-        .execute(self.db.inner_ref())
+        .fetch_one(self.db.inner_ref())
         .await
-        .map_err(AppError::SpecificOperationError)?;
-        Ok(())
+        .map_err(AppError::SpecificOperationError)?
+        .summary_id
+        .into();
+
+        Ok(summary_id)
     }
     async fn update_summary(&self, event: UpdateSummary) -> AppResult<()> {
         let row = sqlx::query!(

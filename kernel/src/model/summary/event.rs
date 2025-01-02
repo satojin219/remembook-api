@@ -1,8 +1,9 @@
-use crate::model::id::SummaryId;
+use crate::model::id::{BookId, SummaryId, UserId};
 
 #[derive(Debug)]
 pub struct CreateSummary {
-    pub summary_id: SummaryId,
+    pub user_id: UserId,
+    pub book_id: BookId,
     pub summary_text: String,
 }
 
