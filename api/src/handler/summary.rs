@@ -4,7 +4,8 @@ use crate::{
         question::QuestionResponse,
         summary::{
             CreateQuestionRequest, CreateQuestionRequestWithIds, CreateSummaryRequest,
-            CreateSummaryRequestWithIds, UpdateSummaryRequest,
+            CreateSummaryRequestWithIds, UpdateSummaryRequest, UserAnswerRequest,
+            UserAnswerResponse,
         },
     },
 };
@@ -15,14 +16,15 @@ use axum::{
 };
 use garde::Validate;
 use kernel::model::{
-    id::{BookId, SummaryId},
+    answer::event::CreateAnswer,
+    id::{BookId, QuestionId, SummaryId},
     question::event::{CreateQuestion, UpdateQuestion},
     summary::event::{CreateSummary, DeleteSummary, UpdateSummary},
 };
 use registry::AppRegistry;
 use shared::{
     error::{AppError, AppResult},
-    open_ai::generate_question,
+    open_ai::{embedding, generate_question},
 };
 
 /// ユーザーが入力した要約を登録し、要約から質問を生成する。
@@ -117,4 +119,34 @@ pub async fn get_question(
                 "The specific question was not found".to_string(),
             )),
         })
+}
+
+pub async fn answer_question(
+    user: AuthorizedUser,
+    Path((book_id, summary_id, question_id)): Path<(BookId, SummaryId, QuestionId)>,
+    State(registry): State<AppRegistry>,
+    Json(req): Json<UserAnswerRequest>,
+) -> AppResult<Json<UserAnswerResponse>> {
+    let summary = registry.summary_repository().get_by_id(summary_id).await?;
+    let score = embedding(
+        req.user_answer.clone(),
+        summary.as_ref().unwrap().to_string(),
+    )
+    .await?;
+
+    registry
+        .answer_repository()
+        .create_answer(CreateAnswer {
+            user_id: user.id(),
+            question_id,
+            answer_text: req.user_answer.clone(),
+            score,
+        })
+        .await?;
+      
+    Ok(Json(UserAnswerResponse {
+        score,
+        summary: summary.unwrap(),
+        user_answer: req.user_answer,
+    }))
 }

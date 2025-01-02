@@ -15,11 +15,13 @@ impl AnswerRepository for AnswerRepositoryImpl {
     async fn create_answer(&self, event: CreateAnswer) -> AppResult<()> {
         sqlx::query!(
             r#"
-                INSERT INTO user_answers(answer_text,score)
-                VALUES($1,$2)
+                INSERT INTO user_answers(answer_text,score,question_id,user_id)
+                VALUES($1,$2,$3,$4)
             "#,
             event.answer_text,
-            event.score
+            event.score,
+            event.question_id as _,
+            event.user_id as _
         )
         .execute(self.db.inner_ref())
         .await
