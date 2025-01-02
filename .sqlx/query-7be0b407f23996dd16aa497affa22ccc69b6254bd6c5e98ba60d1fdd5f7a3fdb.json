@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE questions SET question_text = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7be0b407f23996dd16aa497affa22ccc69b6254bd6c5e98ba60d1fdd5f7a3fdb"
+}

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT question_id, question_text FROM questions WHERE summary_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "question_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "question_text",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "c866466a8afcd454b0b8d6f7ba0c1781c11517e148e02a6fad07406626334b33"
+}

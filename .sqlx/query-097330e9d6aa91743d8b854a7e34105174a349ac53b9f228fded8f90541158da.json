@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO user_answers(answer_text,score,question_id,user_id)\n                VALUES($1,$2,$3,$4)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "097330e9d6aa91743d8b854a7e34105174a349ac53b9f228fded8f90541158da"
+}

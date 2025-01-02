@@ -22,6 +22,7 @@ services:
       JAEGER_HOST: ${JAEGER_HOST}
       JAEGER_PORT: ${JAEGER_PORT}
       OPEN_AI_API_KEY: ${OPEN_AI_API_KEY}
+      DATABASE_URL: ${DATABASE_URL}
     depends_on:
       - postgres
       - redis

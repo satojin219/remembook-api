@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT summary_id, summary_text FROM summaries\n                WHERE summary_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "summary_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "summary_text",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "a0c0a6f00054398b9dab6934494d77ef90e57492c098d571d001146b5ec4174e"
+}
