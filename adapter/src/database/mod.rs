@@ -1,6 +1,6 @@
 use shared::config::DatabaseConfig;
 
-use sqlx::postgres::{PgConnectOptions, PgPool};
+use sqlx::postgres::{PgConnectOptions, PgPool, PgSslMode};
 
 fn make_pg_connect_options(cfg: &DatabaseConfig) -> PgConnectOptions {
     PgConnectOptions::new()
@@ -9,6 +9,7 @@ fn make_pg_connect_options(cfg: &DatabaseConfig) -> PgConnectOptions {
         .username(&cfg.username)
         .password(&cfg.password)
         .database(&cfg.database)
+        .ssl_mode(PgSslMode::Require)
 }
 
 #[derive(Clone)]
