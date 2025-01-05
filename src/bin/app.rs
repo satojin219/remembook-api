@@ -8,7 +8,7 @@ use shared::{
     env::{which, Environment},
 };
 use std::{
-    net::{Ipv4Addr, SocketAddr},
+    net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
 };
 use tokio::net::TcpListener;
@@ -57,6 +57,7 @@ async fn bootstrap() -> Result<()> {
     let app = Router::new()
         .merge(v1::routes())
         .merge(auth::routes())
+        .layer(cors())
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
@@ -68,7 +69,15 @@ async fn bootstrap() -> Result<()> {
                 ),
         )
         .with_state(registry);
-    let addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), 8080);
+    let host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let ip_addr = host
+        .parse::<IpAddr>()
+        .unwrap_or_else(|_| IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)));
+    let port = std::env::var("PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse::<u16>()
+        .expect("PORT must be a valid u16");
+    let addr = SocketAddr::new(ip_addr, port);
     let listener = TcpListener::bind(addr).await.unwrap();
 
     axum::serve(listener, app).await.unwrap();
