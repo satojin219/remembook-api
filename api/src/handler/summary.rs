@@ -17,7 +17,8 @@ use axum::{
 use garde::Validate;
 use kernel::model::{
     answer::event::CreateAnswer,
-    id::{BookId, QuestionId, SummaryId},
+    book::event::CreateBook,
+    id::{QuestionId, SummaryId},
     question::event::UpdateQuestion,
     summary::event::{DeleteSummary, UpdateSummary},
 };
@@ -30,11 +31,22 @@ use shared::{
 /// ユーザーが入力した要約を登録し、要約から質問を生成する。
 pub async fn create_summary(
     user: AuthorizedUser,
-    Path(book_id): Path<BookId>,
     State(registry): State<AppRegistry>,
     Json(req): Json<CreateSummaryRequest>,
 ) -> AppResult<StatusCode> {
     req.validate(&())?;
+
+    let create_book_event = CreateBook {
+        title: req.title.clone(),
+        author: req.author.clone(),
+        image_url: req.image_url.clone(),
+        google_books_id: req.google_books_id.clone(),
+    };
+
+    let book_id = registry
+        .book_repository()
+        .create_book(create_book_event, user.id())
+        .await?;
 
     let create_summary_event = CreateSummaryRequestWithIds(user.id(), book_id, req.clone());
 
@@ -64,7 +76,7 @@ pub async fn create_summary(
 
 pub async fn update_summary(
     _user: AuthorizedUser,
-    Path((_book_id, summary_id)): Path<(BookId, SummaryId)>,
+    Path(summary_id): Path<SummaryId>,
     State(registry): State<AppRegistry>,
     Json(req): Json<UpdateSummaryRequest>,
 ) -> AppResult<StatusCode> {
@@ -123,7 +135,7 @@ pub async fn get_question(
 
 pub async fn answer_question(
     user: AuthorizedUser,
-    Path((book_id, summary_id, question_id)): Path<(BookId, SummaryId, QuestionId)>,
+    Path((summary_id, question_id)): Path<(SummaryId, QuestionId)>,
     State(registry): State<AppRegistry>,
     Json(req): Json<UserAnswerRequest>,
 ) -> AppResult<Json<UserAnswerResponse>> {

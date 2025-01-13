@@ -8,9 +8,18 @@ use kernel::model::{
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateSummaryRequest {
     #[garde(length(min = 1))]
     pub body: String,
+    #[garde(length(min = 1))]
+    pub title: String,
+    #[garde(length(min = 1))]
+    pub author: Vec<String>,
+    #[garde(url)]
+    pub image_url: String,
+    #[garde(length(min = 1))]
+    pub google_books_id: String,
 }
 
 #[derive(new)]
@@ -18,7 +27,17 @@ pub struct CreateSummaryRequestWithIds(pub UserId, pub BookId, pub CreateSummary
 
 impl From<CreateSummaryRequestWithIds> for CreateSummary {
     fn from(value: CreateSummaryRequestWithIds) -> Self {
-        let CreateSummaryRequestWithIds(user_id, book_id, CreateSummaryRequest { body }) = value;
+        let CreateSummaryRequestWithIds(
+            user_id,
+            book_id,
+            CreateSummaryRequest {
+                body,
+                title: _,
+                author: _,
+                image_url: _,
+                google_books_id: _,
+            },
+        ) = value;
         CreateSummary {
             book_id,
             user_id,

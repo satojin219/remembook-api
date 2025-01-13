@@ -63,22 +63,26 @@ impl BookRepository for BookRepositoryImpl {
             None => Ok(None),
         }
     }
-    async fn create_book(&self, event: CreateBook, user_id: UserId) -> AppResult<()> {
-        sqlx::query!(
+    async fn create_book(&self, event: CreateBook, user_id: UserId) -> AppResult<BookId> {
+        let book_id: BookId = sqlx::query!(
             r#"
-                INSERT INTO books(title, author, image_url, google_books_id, user_id)
-                VALUES($1,$2,$3,$4,$5)
-            "#,
+            INSERT INTO books(title, author, image_url, google_books_id, user_id)
+            VALUES($1, $2, $3, $4, $5)
+            RETURNING book_id
+        "#,
             event.title,
             &event.author,
             event.image_url,
             event.google_books_id,
             user_id as _
         )
-        .execute(self.db.inner_ref())
+        .fetch_one(self.db.inner_ref())
         .await
-        .map_err(AppError::SpecificOperationError)?;
-        Ok(())
+        .map_err(AppError::SpecificOperationError)?
+        .book_id
+        .into();
+
+        Ok(book_id)
     }
     async fn delete_book(&self, event: DeleteBook) -> AppResult<()> {
         let row = sqlx::query!(
