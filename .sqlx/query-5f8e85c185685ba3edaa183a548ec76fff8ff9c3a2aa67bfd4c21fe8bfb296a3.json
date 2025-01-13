@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT\n            book_id,\n            title,\n            author,\n            image_url,\n            link_url\n        FROM books\n        WHERE book_id = $1\n            ",
+  "query": "\n                SELECT book_id, title,author, image_url,google_books_id FROM books\n            ",
   "describe": {
     "columns": [
       {
@@ -16,7 +16,7 @@
       {
         "ordinal": 2,
         "name": "author",
-        "type_info": "Varchar"
+        "type_info": "TextArray"
       },
       {
         "ordinal": 3,
@@ -25,14 +25,12 @@
       },
       {
         "ordinal": 4,
-        "name": "link_url",
-        "type_info": "Text"
+        "name": "google_books_id",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
-      "Left": [
-        "Uuid"
-      ]
+      "Left": []
     },
     "nullable": [
       false,
@@ -42,5 +40,5 @@
       false
     ]
   },
-  "hash": "35a9ac112ab4a6d34185d1b27d05eb681912700c19940ddef65f01a98e36c71a"
+  "hash": "5f8e85c185685ba3edaa183a548ec76fff8ff9c3a2aa67bfd4c21fe8bfb296a3"
 }
