@@ -28,7 +28,7 @@ impl BookRepository for BookRepositoryImpl {
         let res: Vec<BookRow> = sqlx::query_as!(
             BookRow,
             r#"
-                SELECT book_id, title, image_url FROM books
+                SELECT book_id, title,author, image_url,google_books_id FROM books
             "#,
         )
         .fetch_all(self.db.inner_ref())
@@ -48,10 +48,7 @@ impl BookRepository for BookRepositoryImpl {
             r#"
         SELECT
             book_id,
-            title,
-            author,
-            image_url,
-            link_url
+            google_books_id
         FROM books
         WHERE book_id = $1
             "#,
@@ -69,13 +66,13 @@ impl BookRepository for BookRepositoryImpl {
     async fn create_book(&self, event: CreateBook, user_id: UserId) -> AppResult<()> {
         sqlx::query!(
             r#"
-                INSERT INTO books(title, author, image_url, link_url, user_id)
+                INSERT INTO books(title, author, image_url, google_books_id, user_id)
                 VALUES($1,$2,$3,$4,$5)
             "#,
             event.title,
-            event.author,
+            &event.author,
             event.image_url,
-            event.link_url,
+            event.google_books_id,
             user_id as _
         )
         .execute(self.db.inner_ref())

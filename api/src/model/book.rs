@@ -13,11 +13,11 @@ pub struct CreateBookRequest {
     #[garde(length(min = 1))]
     pub title: String,
     #[garde(length(min = 1))]
-    pub author: String,
+    pub author: Vec<String>,
     #[garde(url)]
     pub image_url: String,
-    #[garde(url)]
-    pub link_url: String,
+    #[garde(length(min = 1))]
+    pub google_books_id: String,
 }
 
 impl From<CreateBookRequest> for CreateBook {
@@ -26,13 +26,13 @@ impl From<CreateBookRequest> for CreateBook {
             title,
             author,
             image_url,
-            link_url,
+            google_books_id,
         } = value;
         Self {
             title,
             author,
             image_url,
-            link_url,
+            google_books_id,
         }
     }
 }
@@ -42,7 +42,9 @@ impl From<CreateBookRequest> for CreateBook {
 pub struct BookResponse {
     pub id: BookId,
     pub title: String,
+    pub author: Vec<String>,
     pub image_url: String,
+    pub google_books_id: String,
 }
 
 impl From<Book> for BookResponse {
@@ -50,12 +52,16 @@ impl From<Book> for BookResponse {
         let Book {
             id,
             title,
+            author,
             image_url,
+            google_books_id,
         } = value;
         Self {
             id,
             title,
+            author,
             image_url,
+            google_books_id,
         }
     }
 }
@@ -69,27 +75,18 @@ pub struct BooksResponse {
 #[serde(rename_all = "camelCase")]
 pub struct BookDetailResponse {
     pub id: BookId,
-    pub title: String,
-    pub author: String,
-    pub image_url: String,
-    pub link_url: String,
+    pub google_books_id: String,
 }
 
 impl From<BookDetail> for BookDetailResponse {
     fn from(book_value: BookDetail) -> Self {
         let BookDetail {
             id,
-            title,
-            image_url,
-            author,
-            link_url,
+            google_books_id,
         } = book_value;
         Self {
             id,
-            title,
-            image_url,
-            author,
-            link_url,
+            google_books_id,
         }
     }
 }
