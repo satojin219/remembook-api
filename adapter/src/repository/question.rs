@@ -25,7 +25,7 @@ impl QuestionRepository for QuestionRepositoryImpl {
         let row: Option<QuestionRow> = sqlx::query_as!(
             QuestionRow,
             r#"
-        SELECT question_id, question_text FROM questions WHERE summary_id = $1
+        SELECT question_id, question_text,summary_id FROM questions WHERE summary_id = $1
             "#,
             summary_id as _
         )
@@ -42,7 +42,7 @@ impl QuestionRepository for QuestionRepositoryImpl {
         let rows: Vec<QuestionRow> = sqlx::query_as!(
             QuestionRow,
             r#"
-        SELECT question_id, question_text FROM questions WHERE book_id = $1
+        SELECT question_id, question_text,summary_id FROM questions WHERE book_id = $1
             "#,
             book_id as _
         )

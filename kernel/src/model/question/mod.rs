@@ -1,4 +1,4 @@
-use super::id::QuestionId;
+use super::id::{QuestionId, SummaryId};
 
 pub mod event;
 
@@ -6,4 +6,5 @@ pub mod event;
 pub struct Question {
     pub id: QuestionId,
     pub body: String,
+    pub summary_id: SummaryId,
 }

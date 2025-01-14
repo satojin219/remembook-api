@@ -1,7 +1,7 @@
 use crate::{
     extractor::AuthorizedUser,
     model::{
-        question::QuestionResponse,
+        question::{QuestionResponse, QuestionsResponse},
         summary::{
             CreateQuestionRequest, CreateQuestionRequestWithIds, CreateSummaryRequest,
             CreateSummaryRequestWithIds, UpdateSummaryRequest, UserAnswerRequest,
@@ -18,7 +18,7 @@ use garde::Validate;
 use kernel::model::{
     answer::event::CreateAnswer,
     book::event::CreateBook,
-    id::{QuestionId, SummaryId},
+    id::{BookId, QuestionId, SummaryId},
     question::event::UpdateQuestion,
     summary::event::{DeleteSummary, UpdateSummary},
 };
@@ -131,6 +131,23 @@ pub async fn get_question(
                 "The specific question was not found".to_string(),
             )),
         })
+}
+
+pub async fn get_question_list(
+    _user: AuthorizedUser,
+    Path(book_id): Path<BookId>,
+    State(registry): State<AppRegistry>,
+) -> AppResult<Json<QuestionsResponse>> {
+    let questions = registry
+        .question_repository()
+        .get_list_by_book_id(book_id)
+        .await?
+        .into_iter()
+        .map(QuestionResponse::from)
+        .collect::<Vec<_>>();
+
+
+    Ok(Json(QuestionsResponse { questions }))
 }
 
 pub async fn answer_question(
