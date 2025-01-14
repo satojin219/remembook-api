@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT question_id, question_text FROM questions WHERE summary_id = $1\n            ",
+  "query": "\n        SELECT question_id, question_text,summary_id FROM questions WHERE book_id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -12,6 +12,11 @@
         "ordinal": 1,
         "name": "question_text",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "summary_id",
+        "type_info": "Uuid"
       }
     ],
     "parameters": {
@@ -21,8 +26,9 @@
     },
     "nullable": [
       false,
+      false,
       false
     ]
   },
-  "hash": "c866466a8afcd454b0b8d6f7ba0c1781c11517e148e02a6fad07406626334b33"
+  "hash": "669bc9248b2e8f179cfd8f4181bd38e78bbeb7b4830d3058693523c96a2fb54e"
 }
