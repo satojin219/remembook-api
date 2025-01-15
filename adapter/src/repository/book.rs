@@ -24,12 +24,13 @@ pub struct BookRepositoryImpl {
 
 #[async_trait]
 impl BookRepository for BookRepositoryImpl {
-    async fn get_by_user_id(&self, _user_id: UserId) -> AppResult<Vec<Book>> {
+    async fn get_by_user_id(&self, user_id: UserId) -> AppResult<Vec<Book>> {
         let res: Vec<BookRow> = sqlx::query_as!(
             BookRow,
             r#"
-                SELECT book_id, title,author, image_url,google_books_id FROM books
+                SELECT book_id, title,author, image_url, google_books_id FROM books WHERE user_id = $1
             "#,
+            user_id as _
         )
         .fetch_all(self.db.inner_ref())
         .await
