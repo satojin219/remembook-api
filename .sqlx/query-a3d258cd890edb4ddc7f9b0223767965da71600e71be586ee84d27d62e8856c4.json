@@ -1,16 +1,16 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT summary_id, summary_text FROM summaries\n                WHERE summary_id = $1\n            ",
+  "query": "\n                SELECT memo_id, memo_text FROM memos\n                WHERE memo_id = $1\n            ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "summary_id",
+        "name": "memo_id",
         "type_info": "Uuid"
       },
       {
         "ordinal": 1,
-        "name": "summary_text",
+        "name": "memo_text",
         "type_info": "Text"
       }
     ],
@@ -24,5 +24,5 @@
       false
     ]
   },
-  "hash": "a0c0a6f00054398b9dab6934494d77ef90e57492c098d571d001146b5ec4174e"
+  "hash": "a3d258cd890edb4ddc7f9b0223767965da71600e71be586ee84d27d62e8856c4"
 }
