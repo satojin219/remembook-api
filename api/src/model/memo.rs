@@ -1,15 +1,15 @@
 use derive_new::new;
 use garde::Validate;
 use kernel::model::{
-    id::{BookId, QuestionId, SummaryId, UserId},
+    id::{BookId, MemoId, QuestionId, UserId},
+    memo::event::CreateMemo,
     question::event::CreateQuestion,
-    summary::event::CreateSummary,
 };
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateSummaryRequest {
+pub struct CreateMemoRequest {
     #[garde(length(min = 1))]
     pub body: String,
     #[garde(length(min = 1))]
@@ -23,14 +23,14 @@ pub struct CreateSummaryRequest {
 }
 
 #[derive(new)]
-pub struct CreateSummaryRequestWithIds(pub UserId, pub BookId, pub CreateSummaryRequest);
+pub struct CreateMemoRequestWithIds(pub UserId, pub BookId, pub CreateMemoRequest);
 
-impl From<CreateSummaryRequestWithIds> for CreateSummary {
-    fn from(value: CreateSummaryRequestWithIds) -> Self {
-        let CreateSummaryRequestWithIds(
+impl From<CreateMemoRequestWithIds> for CreateMemo {
+    fn from(value: CreateMemoRequestWithIds) -> Self {
+        let CreateMemoRequestWithIds(
             user_id,
             book_id,
-            CreateSummaryRequest {
+            CreateMemoRequest {
                 body,
                 title: _,
                 author: _,
@@ -38,10 +38,10 @@ impl From<CreateSummaryRequestWithIds> for CreateSummary {
                 google_books_id: _,
             },
         ) = value;
-        CreateSummary {
+        CreateMemo {
             book_id,
             user_id,
-            summary_text: body,
+            memo_text: body,
         }
     }
 }
@@ -56,22 +56,18 @@ pub struct CreateQuestionRequest {
 pub struct CreateQuestionRequestWithIds(
     pub UserId,
     pub BookId,
-    pub SummaryId,
+    pub MemoId,
     pub CreateQuestionRequest,
 );
 
 impl From<CreateQuestionRequestWithIds> for CreateQuestion {
     fn from(value: CreateQuestionRequestWithIds) -> Self {
-        let CreateQuestionRequestWithIds(
-            user_id,
-            book_id,
-            summary_id,
-            CreateQuestionRequest { body },
-        ) = value;
+        let CreateQuestionRequestWithIds(user_id, book_id, memo_id, CreateQuestionRequest { body }) =
+            value;
         CreateQuestion {
             user_id,
             book_id,
-            summary_id,
+            memo_id,
             question_text: body,
         }
     }
@@ -79,7 +75,7 @@ impl From<CreateQuestionRequestWithIds> for CreateQuestion {
 
 #[derive(Debug, Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateSummaryRequest {
+pub struct UpdateMemoRequest {
     #[garde(length(min = 1))]
     pub body: String,
 }
@@ -103,5 +99,5 @@ pub struct UserAnswerRequest {
 pub struct UserAnswerResponse {
     pub score: i32,
     pub user_answer: String,
-    pub summary: String,
+    pub memo: String,
 }

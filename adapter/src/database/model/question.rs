@@ -1,11 +1,12 @@
 use kernel::model::{
-    id::{QuestionId, SummaryId},
+    id::{MemoId, QuestionId},
     question::Question,
 };
+
 pub struct QuestionRow {
     pub question_id: QuestionId,
     pub question_text: String,
-    pub summary_id: SummaryId,
+    pub memo_id: MemoId,
 }
 
 impl From<QuestionRow> for Question {
@@ -13,12 +14,12 @@ impl From<QuestionRow> for Question {
         let QuestionRow {
             question_id,
             question_text,
-            summary_id,
+            memo_id,
         } = value;
         Question {
             id: question_id,
             body: question_text,
-            summary_id,
+            memo_id,
         }
     }
 }
