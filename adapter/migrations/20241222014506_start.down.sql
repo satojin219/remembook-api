@@ -15,3 +15,9 @@ DROP TABLE IF EXISTS users;
 
 -- 最後にトリガー関数を削除
 DROP FUNCTION IF EXISTS set_updated_at ();
+
+DROP INDEX IF EXISTS idx_summaries_user_book;
+
+DROP INDEX IF EXISTS idx_questions_memo_created;
+
+DROP INDEX IF EXISTS idx_user_answers_question;

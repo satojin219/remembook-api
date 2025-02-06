@@ -1,2 +1,2 @@
 -- Add down migration script here
-ALTER TABLE users DROP COLUMN score;
+ALTER TABLE users DROP COLUMN coins;
