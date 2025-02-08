@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE memos SET memo_text = $1\n                WHERE memo_id = $2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "685d4938a3a59083ccfaea9af50b7bdf28611e343b69b90f87a097ecbb0c706e"
+}

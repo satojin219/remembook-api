@@ -1,2 +1,2 @@
 -- Add up migration script here
-ALTER TABLE users ADD COLUMN score INTEGER DEFAULT 0;
+ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 0;

@@ -1,15 +1,19 @@
 use crate::model::id::{BookId, MemoId, UserId};
 
 #[derive(Debug)]
-pub struct CreateQuestion {
+pub struct CreateMemo {
     pub user_id: UserId,
     pub book_id: BookId,
-    pub memo_id: MemoId,
-    pub question_text: String,
+    pub memo_text: String,
 }
 
 #[derive(Debug)]
-pub struct UpdateQuestion {
+pub struct UpdateMemo {
     pub memo_id: MemoId,
-    pub question_text: String,
+    pub memo_text: String,
+}
+
+#[derive(Debug)]
+pub struct DeleteMemo {
+    pub memo_id: MemoId,
 }
