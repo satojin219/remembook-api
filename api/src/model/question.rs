@@ -1,5 +1,5 @@
 use kernel::model::{
-    id::{QuestionId, SummaryId},
+    id::{MemoId, QuestionId},
     question::Question,
 };
 use serde::{Deserialize, Serialize};
@@ -9,13 +9,13 @@ use serde::{Deserialize, Serialize};
 pub struct QuestionResponse {
     pub id: QuestionId,
     pub body: String,
-    pub summary_id: SummaryId,
+    pub memo_id: MemoId,
 }
 
 impl From<Question> for QuestionResponse {
     fn from(value: Question) -> Self {
-        let Question { id, body,summary_id } = value;
-        Self { id, body, summary_id }
+        let Question { id, body, memo_id } = value;
+        Self { id, body, memo_id }
     }
 }
 

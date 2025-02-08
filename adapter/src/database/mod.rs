@@ -9,7 +9,7 @@ fn make_pg_connect_options(cfg: &DatabaseConfig) -> PgConnectOptions {
         .username(&cfg.username)
         .password(&cfg.password)
         .database(&cfg.database)
-        .ssl_mode(PgSslMode::Require)
+    // .ssl_mode(PgSslMode::Require)
 }
 
 #[derive(Clone)]

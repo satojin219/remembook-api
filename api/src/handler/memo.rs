@@ -1,12 +1,11 @@
 use crate::{
     extractor::AuthorizedUser,
     model::{
-        question::{QuestionResponse, QuestionsResponse},
-        summary::{
-            CreateQuestionRequest, CreateQuestionRequestWithIds, CreateSummaryRequest,
-            CreateSummaryRequestWithIds, UpdateSummaryRequest, UserAnswerRequest,
-            UserAnswerResponse,
+        memo::{
+            CreateMemoRequest, CreateMemoRequestWithIds, CreateQuestionRequest,
+            CreateQuestionRequestWithIds, UpdateMemoRequest, UserAnswerRequest, UserAnswerResponse,
         },
+        question::{QuestionResponse, QuestionsResponse},
     },
 };
 use axum::{
@@ -18,9 +17,9 @@ use garde::Validate;
 use kernel::model::{
     answer::event::CreateAnswer,
     book::event::CreateBook,
-    id::{BookId, QuestionId, SummaryId},
+    id::{BookId, MemoId, QuestionId},
+    memo::event::{DeleteMemo, UpdateMemo},
     question::event::UpdateQuestion,
-    summary::event::{DeleteSummary, UpdateSummary},
 };
 use registry::AppRegistry;
 use shared::{
@@ -28,11 +27,10 @@ use shared::{
     open_ai::{embedding, generate_question},
 };
 
-/// ユーザーが入力した要約を登録し、要約から質問を生成する。
-pub async fn create_summary(
+pub async fn create_memo(
     user: AuthorizedUser,
     State(registry): State<AppRegistry>,
-    Json(req): Json<CreateSummaryRequest>,
+    Json(req): Json<CreateMemoRequest>,
 ) -> AppResult<StatusCode> {
     req.validate(&())?;
 
@@ -48,11 +46,11 @@ pub async fn create_summary(
         .create_book(create_book_event, user.id())
         .await?;
 
-    let create_summary_event = CreateSummaryRequestWithIds(user.id(), book_id, req.clone());
+    let create_memo_event = CreateMemoRequestWithIds(user.id(), book_id, req.clone());
 
-    let summary_id = registry
-        .summary_repository()
-        .create_summary(create_summary_event.into())
+    let memo_id = registry
+        .memo_repository()
+        .create_memo(create_memo_event.into())
         .await?;
 
     let question_text = generate_question(&req.body).await?;
@@ -60,7 +58,7 @@ pub async fn create_summary(
     let create_question_event = CreateQuestionRequestWithIds(
         user.id(),
         book_id,
-        summary_id,
+        memo_id,
         CreateQuestionRequest {
             body: question_text,
         },
@@ -74,19 +72,19 @@ pub async fn create_summary(
     Ok(StatusCode::CREATED)
 }
 
-pub async fn update_summary(
+pub async fn update_memo(
     _user: AuthorizedUser,
-    Path(summary_id): Path<SummaryId>,
+    Path(memo_id): Path<MemoId>,
     State(registry): State<AppRegistry>,
-    Json(req): Json<UpdateSummaryRequest>,
+    Json(req): Json<UpdateMemoRequest>,
 ) -> AppResult<StatusCode> {
     req.validate(&())?;
 
     registry
-        .summary_repository()
-        .update_summary(UpdateSummary {
-            summary_id,
-            summary_text: req.body.clone(),
+        .memo_repository()
+        .update_memo(UpdateMemo {
+            memo_id,
+            memo_text: req.body.clone(),
         })
         .await?;
 
@@ -95,7 +93,7 @@ pub async fn update_summary(
     registry
         .question_repository()
         .update_question(UpdateQuestion {
-            summary_id,
+            memo_id,
             question_text,
         })
         .await?;
@@ -103,14 +101,14 @@ pub async fn update_summary(
     Ok(StatusCode::OK)
 }
 
-pub async fn delete_summary(
+pub async fn delete_memo(
     _user: AuthorizedUser,
-    Path(summary_id): Path<SummaryId>,
+    Path(memo_id): Path<MemoId>,
     State(registry): State<AppRegistry>,
 ) -> AppResult<StatusCode> {
     registry
-        .summary_repository()
-        .delete_summary(DeleteSummary { summary_id })
+        .memo_repository()
+        .delete_memo(DeleteMemo { memo_id })
         .await?;
 
     Ok(StatusCode::OK)
@@ -118,12 +116,12 @@ pub async fn delete_summary(
 
 pub async fn get_question(
     _user: AuthorizedUser,
-    Path(summary_id): Path<SummaryId>,
+    Path(memo_id): Path<MemoId>,
     State(registry): State<AppRegistry>,
 ) -> AppResult<Json<QuestionResponse>> {
     registry
         .question_repository()
-        .get_by_summary_id(summary_id)
+        .get_by_memo_id(memo_id)
         .await
         .and_then(|q| match q {
             Some(q) => Ok(Json(q.into())),
@@ -146,22 +144,17 @@ pub async fn get_question_list(
         .map(QuestionResponse::from)
         .collect::<Vec<_>>();
 
-
     Ok(Json(QuestionsResponse { questions }))
 }
 
 pub async fn answer_question(
     user: AuthorizedUser,
-    Path((summary_id, question_id)): Path<(SummaryId, QuestionId)>,
+    Path((memo_id, question_id)): Path<(MemoId, QuestionId)>,
     State(registry): State<AppRegistry>,
     Json(req): Json<UserAnswerRequest>,
 ) -> AppResult<Json<UserAnswerResponse>> {
-    let summary = registry.summary_repository().get_by_id(summary_id).await?;
-    let score = embedding(
-        req.user_answer.clone(),
-        summary.as_ref().unwrap().to_string(),
-    )
-    .await?;
+    let memo = registry.memo_repository().get_by_id(memo_id).await?;
+    let score = embedding(req.user_answer.clone(), memo.as_ref().unwrap().to_string()).await?;
 
     registry
         .answer_repository()
@@ -175,7 +168,7 @@ pub async fn answer_question(
 
     Ok(Json(UserAnswerResponse {
         score,
-        summary: summary.unwrap(),
+        memo: memo.unwrap(),
         user_answer: req.user_answer,
     }))
 }

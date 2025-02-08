@@ -1,11 +1,11 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO summaries (summary_text, user_id, book_id)\n            VALUES ($1, $2, $3)\n            RETURNING summary_id\n        ",
+  "query": "\n            INSERT INTO memos (memo_text, user_id, book_id)\n            VALUES ($1, $2, $3)\n            RETURNING memo_id\n        ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "summary_id",
+        "name": "memo_id",
         "type_info": "Uuid"
       }
     ],
@@ -20,5 +20,5 @@
       false
     ]
   },
-  "hash": "ed50d3e248eb6a89380fb76ed1ce1f8fc0bd7ad778946606211585fd7d210217"
+  "hash": "08663fba2cdd4d322c968224f6558703ced69c7acd34643cf1b5aea97c96d4e3"
 }
