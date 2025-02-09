@@ -4,7 +4,7 @@ use shared::error::AppResult;
 use crate::model::{
     id::UserId,
     user::{
-        event::{CreateUser, DeleteUser, UpdateUserPassword},
+        event::{CreateUser, DeleteUser, UpdateCoin, UpdateUserPassword},
         User,
     },
 };
@@ -15,4 +15,5 @@ pub trait UserRepository: Send + Sync {
     async fn create(&self, event: CreateUser) -> AppResult<User>;
     async fn update_password(&self, event: UpdateUserPassword) -> AppResult<()>;
     async fn delete(&self, event: DeleteUser) -> AppResult<()>;
+    async fn update_coin(&self, event: UpdateCoin) -> AppResult<()>;
 }

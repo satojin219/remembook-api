@@ -18,3 +18,9 @@ pub struct UpdateUserPassword {
 pub struct DeleteUser {
     pub user_id: UserId,
 }
+
+#[derive(Debug)]
+pub struct UpdateCoin {
+    pub user_id: UserId,
+    pub amount: i32,
+}

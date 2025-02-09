@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use derive_new::new;
 use kernel::model::id::UserId;
+use kernel::model::user::event::UpdateCoin;
 use kernel::model::user::{
     event::{CreateUser, DeleteUser, UpdateUserPassword},
     User,
@@ -75,6 +76,29 @@ impl UserRepository for UserRepositoryImpl {
             r#"
         DELETE FROM users WHERE user_id = $1
         "#,
+            event.user_id as _
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        if res.rows_affected() < 1 {
+            return Err(AppError::EntityNotFound(
+                "Specified user does not exist".into(),
+            ));
+        }
+
+        Ok(())
+    }
+
+    async fn update_coin(&self, event: UpdateCoin) -> AppResult<()> {
+        let res = sqlx::query!(
+            r#"
+        UPDATE users 
+        SET coins = coins + $1 
+        WHERE user_id = $2
+        "#,
+            event.amount,
             event.user_id as _
         )
         .execute(self.db.inner_ref())
