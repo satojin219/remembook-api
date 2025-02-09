@@ -92,6 +92,18 @@ impl UserRepository for UserRepositoryImpl {
     }
 
     async fn update_coin(&self, event: UpdateCoin) -> AppResult<()> {
+        let current_coins: Option<i32> = sqlx::query_scalar!(
+            "SELECT coins FROM users WHERE user_id = $1",
+            event.user_id as _
+        )
+        .fetch_one(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        if current_coins.unwrap_or(0) + event.amount < 0 {
+            return Err(AppError::InsufficientCoinsError);
+        }
+
         let res = sqlx::query!(
             r#"
         UPDATE users 

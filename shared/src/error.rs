@@ -33,6 +33,8 @@ pub enum AppError {
     ForbiddenOperation,
     #[error("{0}")]
     ConversionEntityError(String),
+    #[error("コインが不足しています。")]
+    InsufficientCoinsError,
 }
 
 impl IntoResponse for AppError {
@@ -45,6 +47,7 @@ impl IntoResponse for AppError {
             }
             AppError::UnauthenticatedError | AppError::ForbiddenOperation => StatusCode::FORBIDDEN,
             AppError::UnauthorizedError => StatusCode::UNAUTHORIZED,
+            AppError::InsufficientCoinsError => StatusCode::BAD_REQUEST,
             e @ (AppError::TransactionError(_)
             | AppError::SpecificOperationError(_)
             | AppError::NoRowsAffectedError(_)

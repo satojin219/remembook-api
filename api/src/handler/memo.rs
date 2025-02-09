@@ -20,6 +20,7 @@ use kernel::model::{
     id::{BookId, MemoId, QuestionId},
     memo::event::{DeleteMemo, UpdateMemo},
     question::event::UpdateQuestion,
+    user::event::UpdateCoin,
 };
 use registry::AppRegistry;
 use shared::{
@@ -153,6 +154,13 @@ pub async fn answer_question(
     State(registry): State<AppRegistry>,
     Json(req): Json<UserAnswerRequest>,
 ) -> AppResult<Json<UserAnswerResponse>> {
+    registry
+        .user_repository()
+        .update_coin(UpdateCoin {
+            user_id: user.id(),
+            amount: -1,
+        })
+        .await?;
     let memo = registry.memo_repository().get_by_id(memo_id).await?;
     let score = embedding(req.user_answer.clone(), memo.as_ref().unwrap().to_string()).await?;
 
