@@ -13,6 +13,8 @@ DROP TABLE IF EXISTS books;
 -- 最後に誰からも参照されていない users を削除
 DROP TABLE IF EXISTS users;
 
+DROP TABLE IF EXISTS purchase_histories;
+
 -- 最後にトリガー関数を削除
 DROP FUNCTION IF EXISTS set_updated_at ();
 
