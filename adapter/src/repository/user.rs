@@ -131,14 +131,26 @@ impl UserRepository for UserRepositoryImpl {
     }
 
     async fn add_purchase_history(&self, event: AddPurchaseHistory) -> AppResult<()> {
+        let existing = sqlx::query!(
+            r#"SELECT EXISTS(SELECT 1 FROM purchase_histories WHERE session_id = $1)"#,
+            event.session_id
+        )
+        .fetch_one(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        if existing.exists.unwrap_or(false) {
+            return Err(AppError::InvalidSessionIdError);
+        }
+
         let res = sqlx::query!(
             r#"
-        INSERT INTO purchase_histories(user_id, amount, session_id)
+        INSERT INTO purchase_histories(session_id,user_id, amount)
         VALUES($1, $2, $3)
         "#,
+            event.session_id,
             event.user_id as _,
             event.amount,
-            event.session_id
         )
         .execute(self.db.inner_ref())
         .await

@@ -35,6 +35,10 @@ pub enum AppError {
     ConversionEntityError(String),
     #[error("コインが不足しています。")]
     InsufficientCoinsError,
+    #[error("不正なセッションIDです。")]
+    InvalidSessionIdError,
+    #[error("コインの追加に失敗しました。")]
+    FailedToAddCoinError,
 }
 
 impl IntoResponse for AppError {
@@ -55,7 +59,9 @@ impl IntoResponse for AppError {
             | AppError::BcryptError(_)
             | AppError::OpenAIError(_)
             | AppError::CosineSimilarityError(_)
-            | AppError::ConversionEntityError(_)) => {
+            | AppError::ConversionEntityError(_)
+            | AppError::InvalidSessionIdError
+            | AppError::FailedToAddCoinError) => {
                 tracing::error!(
                 error.cause_chain = ?e,
                 error.message = %e,

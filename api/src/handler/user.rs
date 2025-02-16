@@ -16,18 +16,18 @@ pub async fn add_coin(
 
     registry
         .user_repository()
-        .update_coin(UpdateCoin {
+        .add_purchase_history(AddPurchaseHistory {
             user_id: user.id(),
             amount: req.amount,
+            session_id: req.session_id,
         })
         .await?;
 
     registry
         .user_repository()
-        .add_purchase_history(AddPurchaseHistory {
+        .update_coin(UpdateCoin {
             user_id: user.id(),
             amount: req.amount,
-            session_id: req.session_id,
         })
         .await?;
 
