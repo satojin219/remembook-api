@@ -24,3 +24,10 @@ pub struct UpdateCoin {
     pub user_id: UserId,
     pub amount: i32,
 }
+
+#[derive(Debug)]
+pub struct AddPurchaseHistory {
+    pub user_id: UserId,
+    pub amount: i32,
+    pub session_id: String,
+}

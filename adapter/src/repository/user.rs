@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use derive_new::new;
 use kernel::model::id::UserId;
-use kernel::model::user::event::UpdateCoin;
+use kernel::model::user::event::{AddPurchaseHistory, UpdateCoin};
 use kernel::model::user::{
     event::{CreateUser, DeleteUser, UpdateUserPassword},
     User,
@@ -23,7 +23,7 @@ impl UserRepository for UserRepositoryImpl {
         let row = sqlx::query_as!(
             UserRow,
             r#"
-        SELECT user_id,name,email,created_at, updated_at FROM users WHERE user_id = $1
+        SELECT user_id,name,email,coins,created_at, updated_at FROM users WHERE user_id = $1
         "#,
             _current_user_id as _,
         )
@@ -43,12 +43,13 @@ impl UserRepository for UserRepositoryImpl {
 
         let res = sqlx::query!(
             r#"
-        INSERT INTO users(user_id,name,email,password_hash)
-        VALUES($1,$2,$3,$4)
+        INSERT INTO users(user_id,name,email,coins,password_hash)
+        VALUES($1,$2,$3,$4,$5)
         "#,
             user_id as _,
             event.name,
             event.email,
+            0,
             hashed_password
         )
         .execute(self.db.inner_ref())
@@ -64,6 +65,7 @@ impl UserRepository for UserRepositoryImpl {
             id: user_id,
             name: event.name,
             email: event.email,
+            coins: 0,
         })
     }
 
@@ -92,15 +94,17 @@ impl UserRepository for UserRepositoryImpl {
     }
 
     async fn update_coin(&self, event: UpdateCoin) -> AppResult<()> {
-        let current_coins: Option<i32> = sqlx::query_scalar!(
-            "SELECT coins FROM users WHERE user_id = $1",
+        let row = sqlx::query!(
+            r#"
+                SELECT coins FROM users WHERE user_id = $1
+            "#,
             event.user_id as _
         )
         .fetch_one(self.db.inner_ref())
         .await
         .map_err(AppError::SpecificOperationError)?;
 
-        if current_coins.unwrap_or(0) + event.amount < 0 {
+        if row.coins + event.amount < 0 {
             return Err(AppError::InsufficientCoinsError);
         }
 
@@ -120,6 +124,29 @@ impl UserRepository for UserRepositoryImpl {
         if res.rows_affected() < 1 {
             return Err(AppError::EntityNotFound(
                 "Specified user does not exist".into(),
+            ));
+        }
+
+        Ok(())
+    }
+
+    async fn add_purchase_history(&self, event: AddPurchaseHistory) -> AppResult<()> {
+        let res = sqlx::query!(
+            r#"
+        INSERT INTO purchase_histories(user_id, amount, session_id)
+        VALUES($1, $2, $3)
+        "#,
+            event.user_id as _,
+            event.amount,
+            event.session_id
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        if res.rows_affected() < 1 {
+            return Err(AppError::NoRowsAffectedError(
+                "No purchase history has been created".into(),
             ));
         }
 

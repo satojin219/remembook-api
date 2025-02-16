@@ -6,6 +6,7 @@ pub struct UserRow {
     pub user_id: UserId,
     pub name: String,
     pub email: String,
+    pub coins: i32,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -17,12 +18,14 @@ impl TryFrom<UserRow> for User {
             user_id,
             name,
             email,
+            coins,
             ..
         } = value;
         Ok(User {
             id: user_id,
             name,
             email,
+            coins,
         })
     }
 }
