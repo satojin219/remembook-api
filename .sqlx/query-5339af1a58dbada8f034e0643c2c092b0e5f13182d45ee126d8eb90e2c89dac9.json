@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT coins FROM users WHERE user_id = $1",
+  "query": "\n                SELECT coins FROM users WHERE user_id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -15,8 +15,8 @@
       ]
     },
     "nullable": [
-      true
+      false
     ]
   },
-  "hash": "6723d4c64c2ac30a3674162b1b2617073913dd775c3c6ed1074e07db55931bd3"
+  "hash": "5339af1a58dbada8f034e0643c2c092b0e5f13182d45ee126d8eb90e2c89dac9"
 }

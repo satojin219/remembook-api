@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO purchase_histories(user_id, amount, session_id)\n        VALUES($1, $2, $3)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e8bccd15680cfd288942e2586ea1a347b89c05a16ee11de770027bb83f99e157"
+}

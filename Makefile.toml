@@ -148,6 +148,7 @@ args = [
     "prepare",
     "--database-url",
     "postgres://app:passwd@localhost:5432/app",
+    "--workspace"
 ]
 
 [tasks.psql]
