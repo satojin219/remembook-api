@@ -1,4 +1,5 @@
-use axum::{http::StatusCode, response::IntoResponse};
+use axum::{http::StatusCode, response::IntoResponse, Json};
+use serde_json::json;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -41,17 +42,57 @@ pub enum AppError {
     FailedToAddCoinError,
 }
 
+impl AppError {
+    fn as_str(&self) -> &'static str {
+        match self {
+            AppError::UnprocessableEntity(_) => "UnprocessableEntity",
+            AppError::EntityNotFound(_) => "EntityNotFound",
+            AppError::ValidationError(_) => "ValidationError",
+            AppError::TransactionError(_) => "TransactionError",
+            AppError::SpecificOperationError(_) => "SpecificOperationError",
+            AppError::NoRowsAffectedError(_) => "NoRowsAffectedError",
+            AppError::KeyValueStoreError(_) => "KeyValueStoreError",
+            AppError::BcryptError(_) => "BcryptError",
+            AppError::ConvertToUuidError(_) => "ConvertToUuidError",
+            AppError::OpenAIError(_) => "OpenAIError",
+            AppError::CosineSimilarityError(_) => "CosineSimilarityError",
+            AppError::UnauthenticatedError => "UnauthenticatedError",
+            AppError::UnauthorizedError => "UnauthorizedError",
+            AppError::ForbiddenOperation => "ForbiddenOperation",
+            AppError::ConversionEntityError(_) => "ConversionEntityError",
+            AppError::InsufficientCoinsError => "InsufficientCoinsError",
+            AppError::InvalidSessionIdError => "InvalidSessionIdError",
+            AppError::FailedToAddCoinError => "FailedToAddCoinError",
+        }
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
-        let status_code = match self {
-            AppError::UnprocessableEntity(_) => StatusCode::UNPROCESSABLE_ENTITY,
-            AppError::EntityNotFound(_) => StatusCode::NOT_FOUND,
-            AppError::ValidationError(_) | AppError::ConvertToUuidError(_) => {
-                StatusCode::BAD_REQUEST
+        let (status_code, error_message) = match &self {
+            AppError::UnprocessableEntity(msg) => {
+                (StatusCode::UNPROCESSABLE_ENTITY, msg.to_string())
             }
-            AppError::UnauthenticatedError | AppError::ForbiddenOperation => StatusCode::FORBIDDEN,
-            AppError::UnauthorizedError => StatusCode::UNAUTHORIZED,
-            AppError::InsufficientCoinsError => StatusCode::BAD_REQUEST,
+            AppError::EntityNotFound(msg) => (StatusCode::NOT_FOUND, msg.to_string()),
+            AppError::ValidationError(e) => (StatusCode::BAD_REQUEST, e.to_string()),
+            AppError::ConvertToUuidError(_) => (
+                StatusCode::BAD_REQUEST,
+                "Failed to convert to UUID".to_string(),
+            ),
+            AppError::UnauthenticatedError => (StatusCode::FORBIDDEN, "Access denied".to_string()),
+            AppError::ForbiddenOperation => {
+                (StatusCode::FORBIDDEN, "Permission denied".to_string())
+            }
+            AppError::UnauthorizedError => (
+                StatusCode::UNAUTHORIZED,
+                "Authentication failed".to_string(),
+            ),
+            AppError::InsufficientCoinsError => {
+                (StatusCode::BAD_REQUEST, "Insufficient balance".to_string())
+            }
+            AppError::InvalidSessionIdError => {
+                (StatusCode::BAD_REQUEST, "Invalid session ID".to_string())
+            }
             e @ (AppError::TransactionError(_)
             | AppError::SpecificOperationError(_)
             | AppError::NoRowsAffectedError(_)
@@ -60,19 +101,29 @@ impl IntoResponse for AppError {
             | AppError::OpenAIError(_)
             | AppError::CosineSimilarityError(_)
             | AppError::ConversionEntityError(_)
-            | AppError::InvalidSessionIdError
             | AppError::FailedToAddCoinError) => {
                 tracing::error!(
-                error.cause_chain = ?e,
-                error.message = %e,
-                "Unexpected error happened"
+                    error.cause_chain = ?e,
+                    error.message = %e,
+                    "Unexpected error happened"
                 );
-                StatusCode::INTERNAL_SERVER_ERROR
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Unexpected error happened.".to_string(),
+                )
             }
         };
-        status_code.into_response()
+
+        let body = Json(json!({
+            "error": {
+                "status": status_code.as_u16(),
+                "code": self.as_str(),
+                "message": error_message,
+            }
+        }));
+
+        (status_code, body).into_response()
     }
 }
 
-// エラー型が `AppError` なものを扱える `Result` 型
 pub type AppResult<T> = Result<T, AppError>;
