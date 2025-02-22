@@ -12,9 +12,10 @@ CREATE TABLE IF NOT EXISTS users (
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
-  coins INTEGER CHECK (coins >= 0),
+  coins INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  updated_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+  updated_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  logined_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
 );
 
 -- ユーザーが登録した書籍情報
@@ -30,18 +31,18 @@ CREATE TABLE IF NOT EXISTS books (
 );
 CREATE INDEX idx_books ON books(user_id, created_at);
 
--- ユーザーが要約した情報
-CREATE TABLE IF NOT EXISTS summaries (
-  summary_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  summary_text TEXT NOT NULL,
+-- ユーザーが要約した情報（memosに変更）
+CREATE TABLE IF NOT EXISTS memos (
+  memo_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  memo_text TEXT NOT NULL,
   created_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
   book_id UUID NOT NULL REFERENCES books(book_id) ON DELETE CASCADE
 );
-CREATE INDEX idx_summaries_user_book ON summaries(user_id, book_id);
+CREATE INDEX idx_memos_user_book ON memos(user_id, book_id);
 
--- ユーザーが書いた要約から生成された質問
+-- ユーザーが書いた要約（memos）から生成された質問
 CREATE TABLE IF NOT EXISTS questions (
   question_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   question_text TEXT NOT NULL,
@@ -49,11 +50,11 @@ CREATE TABLE IF NOT EXISTS questions (
   updated_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
   book_id UUID NOT NULL REFERENCES books(book_id) ON DELETE CASCADE,
-  summary_id UUID NOT NULL REFERENCES summaries(summary_id) ON DELETE CASCADE
+  memo_id UUID NOT NULL REFERENCES memos(memo_id) ON DELETE CASCADE
 );
-CREATE INDEX idx_questions_summary_created ON questions(summary_id, created_at);
+CREATE INDEX idx_questions_memo_created ON questions(memo_id, created_at);
 
--- 質問に対する回答とユーザーの書いた要約と回答を比較した結果
+-- 質問に対する回答とユーザーの書いた要約（memos）と回答を比較した結果
 CREATE TABLE IF NOT EXISTS user_answers (
   answer_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   question_id UUID NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
@@ -64,3 +65,11 @@ CREATE TABLE IF NOT EXISTS user_answers (
   updated_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
 );
 CREATE INDEX idx_user_answers_question ON user_answers(user_id, question_id);
+
+CREATE TABLE IF NOT EXISTS purchase_histories (
+  purchase_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+  session_id VARCHAR(255) NOT NULL UNIQUE,
+  amount INTEGER NOT NULL,
+  created_at TIMESTAMP(3) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+);
