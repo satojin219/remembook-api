@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT user_id,name,email,coins,created_at, updated_at FROM users WHERE user_id = $1\n        ",
+  "query": "\n        SELECT user_id,name,email,coins,created_at,updated_at,logined_at FROM users WHERE user_id = $1\n        ",
   "describe": {
     "columns": [
       {
@@ -32,6 +32,11 @@
         "ordinal": 5,
         "name": "updated_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "logined_at",
+        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
@@ -45,8 +50,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "dcc885ac20b43f2561b1a9e20491d979545a12604b9c170d76b72218551f2e71"
+  "hash": "a3f34a6a9f863b1b09183f6cb89e08601fcf9ae5b39ca42c38549b49387cbf3a"
 }

@@ -9,6 +9,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bcrypt",
+ "chrono",
  "derive-new",
  "kernel",
  "redis",
@@ -1322,6 +1323,7 @@ name = "kernel"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "chrono",
  "serde",
  "shared",
  "sqlx",
@@ -1917,6 +1919,7 @@ dependencies = [
  "async-openai",
  "axum",
  "bcrypt",
+ "chrono",
  "garde",
  "redis",
  "registry",

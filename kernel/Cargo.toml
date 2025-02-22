@@ -9,3 +9,4 @@ uuid.workspace = true
 async-trait.workspace = true
 sqlx.workspace = true
 serde.workspace = true
+chrono.workspace = true

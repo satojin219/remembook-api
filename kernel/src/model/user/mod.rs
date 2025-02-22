@@ -1,6 +1,5 @@
-
-
 use crate::model::id::UserId;
+use chrono::{DateTime, Utc};
 
 pub mod event;
 
@@ -10,4 +9,5 @@ pub struct User {
     pub name: String,
     pub email: String,
     pub coins: i32,
+    pub logined_at: DateTime<Utc>,
 }

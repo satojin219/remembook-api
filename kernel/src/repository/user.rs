@@ -17,4 +17,5 @@ pub trait UserRepository: Send + Sync {
     async fn delete(&self, event: DeleteUser) -> AppResult<()>;
     async fn update_coin(&self, event: UpdateCoin) -> AppResult<()>;
     async fn add_purchase_history(&self, event: AddPurchaseHistory) -> AppResult<()>;
+    async fn update_logined_at(&self, user_id: UserId) -> AppResult<()>;
 }

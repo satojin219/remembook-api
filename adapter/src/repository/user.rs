@@ -8,6 +8,7 @@ use kernel::model::user::{
 };
 use kernel::repository::user::UserRepository;
 use shared::error::{AppError, AppResult};
+use sqlx::types::chrono;
 
 use crate::database::model::user::UserRow;
 use crate::database::ConnectionPool;
@@ -23,7 +24,7 @@ impl UserRepository for UserRepositoryImpl {
         let row = sqlx::query_as!(
             UserRow,
             r#"
-        SELECT user_id,name,email,coins,created_at, updated_at FROM users WHERE user_id = $1
+        SELECT user_id,name,email,coins,created_at,updated_at,logined_at FROM users WHERE user_id = $1
         "#,
             _current_user_id as _,
         )
@@ -41,7 +42,7 @@ impl UserRepository for UserRepositoryImpl {
         let user_id = UserId::new();
         let hashed_password = hash_password(&event.password)?;
 
-        let res = sqlx::query!(
+        sqlx::query!(
             r#"
         INSERT INTO users(user_id,name,email,coins,password_hash)
         VALUES($1,$2,$3,$4,$5)
@@ -49,23 +50,19 @@ impl UserRepository for UserRepositoryImpl {
             user_id as _,
             event.name,
             event.email,
-            0,
+            10,
             hashed_password
         )
         .execute(self.db.inner_ref())
         .await
         .map_err(AppError::SpecificOperationError)?;
 
-        if res.rows_affected() < 1 {
-            return Err(AppError::NoRowsAffectedError(
-                "No user has been created".into(),
-            ));
-        }
         Ok(User {
             id: user_id,
             name: event.name,
             email: event.email,
-            coins: 0,
+            coins: 10,
+            logined_at: chrono::Utc::now(),
         })
     }
 
@@ -159,6 +156,28 @@ impl UserRepository for UserRepositoryImpl {
         if res.rows_affected() < 1 {
             return Err(AppError::NoRowsAffectedError(
                 "No purchase history has been created".into(),
+            ));
+        }
+
+        Ok(())
+    }
+
+    async fn update_logined_at(&self, user_id: UserId) -> AppResult<()> {
+        let res = sqlx::query!(
+            r#"
+        UPDATE users
+        SET logined_at = CURRENT_TIMESTAMP(3) 
+        WHERE user_id = $1
+        "#,
+            user_id as _
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        if res.rows_affected() < 1 {
+            return Err(AppError::EntityNotFound(
+                "Specified user does not exist".into(),
             ));
         }
 

@@ -69,6 +69,8 @@ async fn bootstrap() -> Result<()> {
                 ),
         )
         .with_state(registry);
+
+    
     let host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
     let ip_addr = host
         .parse::<IpAddr>()

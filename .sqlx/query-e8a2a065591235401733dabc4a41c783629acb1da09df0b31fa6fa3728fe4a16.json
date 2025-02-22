@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE users\n        SET logined_at = CURRENT_TIMESTAMP(3) \n        WHERE user_id = $1\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e8a2a065591235401733dabc4a41c783629acb1da09df0b31fa6fa3728fe4a16"
+}

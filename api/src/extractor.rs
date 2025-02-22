@@ -4,11 +4,14 @@ use axum::{async_trait, RequestPartsExt};
 use axum_extra::headers::authorization::Bearer;
 use axum_extra::headers::Authorization;
 use axum_extra::TypedHeader;
+use chrono::{Duration, Utc};
 use kernel::model::auth::AccessToken;
 use kernel::model::id::UserId;
+use kernel::model::user::event::UpdateCoin;
 use kernel::model::user::User;
 use registry::AppRegistry;
 use shared::error::AppError;
+
 // リクエスト受信時のアクセストークンの検証処理
 pub struct AuthorizedUser {
     pub access_token: AccessToken,
@@ -52,6 +55,19 @@ impl FromRequestParts<AppRegistry> for AuthorizedUser {
             .await?
             .ok_or(AppError::UnauthenticatedError)?;
 
+        // logined_atが現在の日付より過去かどうかを確認
+        let now = chrono::Utc::now();
+        let days_diff = (now.date() - user.logined_at.date()).num_days();
+        if days_diff >= 1 {
+            registry
+                .user_repository()
+                .update_logined_at(user_id)
+                .await?;
+            registry
+                .user_repository()
+                .update_coin(UpdateCoin { user_id, amount: 1 })
+                .await?;
+        }
         Ok(Self { access_token, user })
     }
 }
