@@ -2,9 +2,12 @@ use axum::{extract::State, http::StatusCode, Json};
 use garde::Validate;
 use kernel::model::user::event::{AddPurchaseHistory, UpdateCoin};
 use registry::AppRegistry;
-use shared::error::AppResult;
+use shared::error::{AppError, AppResult};
 
-use crate::{extractor::AuthorizedUser, model::user::AddCoinRequest};
+use crate::{
+    extractor::AuthorizedUser,
+    model::user::{AddCoinRequest, UserResponse},
+};
 
 // NOTE: add_coinはwebhook上で呼び出されるので、ブラウザ上のaccessTokenを渡すことができない。なのでreqから直接uesr_idを取得する
 pub async fn add_coin(
@@ -32,4 +35,17 @@ pub async fn add_coin(
         .await?;
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn get_me(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+) -> AppResult<Json<UserResponse>> {
+    let user = registry
+        .user_repository()
+        .find_current_user(user.id())
+        .await?
+        .ok_or(AppError::EntityNotFound("User not found".into()))?;
+
+    Ok(Json(UserResponse::from(user)))
 }
