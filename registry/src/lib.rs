@@ -5,12 +5,14 @@ use adapter::redis::RedisClient;
 use adapter::repository::answer::AnswerRepositoryImpl;
 use adapter::repository::auth::AuthRepositoryImpl;
 use adapter::repository::book::BookRepositoryImpl;
+use adapter::repository::coin::CoinRepositoryImpl;
 use adapter::repository::memo::MemoRepositoryImpl;
 use adapter::repository::question::QuestionRepositoryImpl;
 use adapter::repository::user::UserRepositoryImpl;
 use kernel::repository::answer::AnswerRepository;
 use kernel::repository::auth::AuthRepository;
 use kernel::repository::book::BookRepository;
+use kernel::repository::coin::CoinRepository;
 use kernel::repository::memo::MemoRepository;
 use kernel::repository::question::QuestionRepository;
 use kernel::repository::user::UserRepository;
@@ -24,6 +26,7 @@ pub struct AppRegistryImpl {
     memo_repository: Arc<dyn MemoRepository>,
     question_repository: Arc<dyn QuestionRepository>,
     answer_repository: Arc<dyn AnswerRepository>,
+    coin_repository: Arc<dyn CoinRepository>,
 }
 
 impl AppRegistryImpl {
@@ -42,6 +45,7 @@ impl AppRegistryImpl {
         let memo_repository = Arc::new(MemoRepositoryImpl::new(pool.clone()));
         let question_repository = Arc::new(QuestionRepositoryImpl::new(pool.clone()));
         let answer_repository = Arc::new(AnswerRepositoryImpl::new(pool.clone()));
+        let coin_repository = Arc::new(CoinRepositoryImpl::new(pool.clone()));
         Self {
             auth_repository,
             user_repository,
@@ -49,6 +53,7 @@ impl AppRegistryImpl {
             memo_repository,
             question_repository,
             answer_repository,
+            coin_repository,
         }
     }
 }
@@ -60,6 +65,7 @@ pub trait AppRegistryExt {
     fn memo_repository(&self) -> Arc<dyn MemoRepository>;
     fn question_repository(&self) -> Arc<dyn QuestionRepository>;
     fn answer_repository(&self) -> Arc<dyn AnswerRepository>;
+    fn coin_repository(&self) -> Arc<dyn CoinRepository>;
 }
 
 impl AppRegistryExt for AppRegistryImpl {
@@ -85,6 +91,10 @@ impl AppRegistryExt for AppRegistryImpl {
 
     fn answer_repository(&self) -> Arc<dyn AnswerRepository> {
         self.answer_repository.clone()
+    }
+
+    fn coin_repository(&self) -> Arc<dyn CoinRepository> {
+        self.coin_repository.clone()
     }
 }
 
