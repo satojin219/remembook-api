@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                coin_id,\n                user_id,\n                session_id,\n                purchased_amount,\n                used_amount,\n                coin_type,\n                created_at,\n                updated_at\n            FROM coins\n            WHERE user_id = $1\n            ORDER BY created_at DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "coin_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "session_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "purchased_amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "used_amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "coin_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ca1120e015035c61be43174754aa44ad38c24623886125bfbf5a5ff7b366f107"
+}

@@ -1,0 +1,65 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE coins\n            SET used_amount = used_amount + $1\n            WHERE user_id = $2\n            AND created_at + INTERVAL '180 days' > NOW()\n            AND purchased_amount - used_amount >= $1\n            RETURNING \n                coin_id,\n                user_id,\n                session_id,\n                purchased_amount,\n                used_amount,\n                coin_type,\n                created_at,\n                updated_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "coin_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "session_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "purchased_amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "used_amount",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "coin_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "53ccc1757f7a226222f431eb3b137288af3b07f0fc27875f96252d84b763ad3a"
+}
