@@ -65,3 +65,4 @@ define_id!(MemoId);
 define_id!(QuestionId);
 define_id!(ComparisonId);
 define_id!(AnswerId);
+define_id!(CoinId);

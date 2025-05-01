@@ -15,12 +15,7 @@ use axum::{
 };
 use garde::Validate;
 use kernel::model::{
-    answer::event::CreateAnswer,
-    book::event::CreateBook,
-    id::{BookId, MemoId, QuestionId},
-    memo::event::{DeleteMemo, UpdateMemo},
-    question::event::UpdateQuestion,
-    user::event::UpdateCoin,
+    answer::event::CreateAnswer, book::event::CreateBook, coin::event::ConsumeCoin, id::{BookId, MemoId, QuestionId}, memo::event::{DeleteMemo, UpdateMemo}, question::event::UpdateQuestion
 };
 use registry::AppRegistry;
 use shared::{
@@ -154,11 +149,12 @@ pub async fn answer_question(
     State(registry): State<AppRegistry>,
     Json(req): Json<UserAnswerRequest>,
 ) -> AppResult<Json<UserAnswerResponse>> {
+    req.validate(&())?;
     registry
-        .user_repository()
-        .update_coin(UpdateCoin {
+        .coin_repository()
+        .consume_coin(ConsumeCoin {
             user_id: user.id(),
-            amount: -1,
+            amount: 1,
         })
         .await?;
     let memo = registry.memo_repository().get_by_id(memo_id).await?;

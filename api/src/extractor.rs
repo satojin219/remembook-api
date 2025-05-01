@@ -6,8 +6,9 @@ use axum_extra::headers::Authorization;
 use axum_extra::TypedHeader;
 use chrono::{Duration, Utc};
 use kernel::model::auth::AccessToken;
+use kernel::model::coin::event::CreateCoin;
+use kernel::model::coin::CoinType;
 use kernel::model::id::UserId;
-use kernel::model::user::event::UpdateCoin;
 use kernel::model::user::User;
 use registry::AppRegistry;
 use shared::error::AppError;
@@ -64,8 +65,13 @@ impl FromRequestParts<AppRegistry> for AuthorizedUser {
                 .update_logined_at(user_id)
                 .await?;
             registry
-                .user_repository()
-                .update_coin(UpdateCoin { user_id, amount: 1 })
+                .coin_repository()
+                .create_coin(CreateCoin {
+                    user_id,
+                    session_id: None,
+                    amount: 1,
+                    coin_type: CoinType::Free,
+                })
                 .await?;
         }
         Ok(Self { access_token, user })

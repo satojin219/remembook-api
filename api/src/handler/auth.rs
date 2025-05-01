@@ -1,5 +1,8 @@
 use axum::{extract::State, http::StatusCode, Json};
-use kernel::model::auth::event::CreateToken;
+use kernel::model::{
+    auth::event::CreateToken,
+    coin::{event::CreateCoin, CoinType},
+};
 use registry::AppRegistry;
 use shared::error::AppResult;
 
@@ -16,6 +19,18 @@ pub async fn signup(
         .auth_repository()
         .register_user(&req.name, &req.email, &req.password)
         .await?;
+
+    // 無償のコインを10枚追加
+    registry
+        .coin_repository()
+        .create_coin(CreateCoin {
+            user_id,
+            session_id: None,
+            amount: 10,
+            coin_type: CoinType::Free,
+        })
+        .await?;
+
     let access_token = registry
         .auth_repository()
         .create_token(CreateToken::new(user_id))

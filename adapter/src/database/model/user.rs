@@ -7,7 +7,6 @@ pub struct UserRow {
     pub user_id: UserId,
     pub name: String,
     pub email: String,
-    pub coins: i32,
     pub created_at: SqlxDateTime<SqlxUtc>,
     pub updated_at: SqlxDateTime<SqlxUtc>,
     pub logined_at: SqlxDateTime<SqlxUtc>,
@@ -21,7 +20,6 @@ impl TryFrom<UserRow> for User {
             user_id,
             name,
             email,
-            coins,
             logined_at,
             ..
         } = value;
@@ -32,7 +30,6 @@ impl TryFrom<UserRow> for User {
             id: user_id,
             name,
             email,
-            coins,
             logined_at: logined_at_chrono,
         })
     }
