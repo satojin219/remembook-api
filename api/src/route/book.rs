@@ -4,14 +4,20 @@ use axum::{
 };
 use registry::AppRegistry;
 
-use crate::handler::book::{delete_book, register_book, show_book, show_book_list};
+use crate::handler::book::{
+    check_book_registration, delete_book, register_book, show_book, show_book_list,
+};
 
 pub fn build_book_routers() -> Router<AppRegistry> {
     let books_router = Router::new()
         .route("/", post(register_book))
         .route("/", get(show_book_list))
         .route("/:book_id", get(show_book))
-        .route("/:book_id", delete(delete_book));
+        .route("/:book_id", delete(delete_book))
+        .route(
+            "/check/:google_id",
+            get(check_book_registration),
+        );
 
     Router::new().nest("/books", books_router)
 }

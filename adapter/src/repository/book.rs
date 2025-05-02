@@ -64,6 +64,31 @@ impl BookRepository for BookRepositoryImpl {
             None => Ok(None),
         }
     }
+
+    async fn get_by_google_books_id(
+        &self,
+        google_books_id: String,
+    ) -> AppResult<Option<BookDetail>> {
+        let row: Option<BookDetailRow> = sqlx::query_as!(
+            BookDetailRow,
+            r#"
+        SELECT
+            book_id,
+            google_books_id
+        FROM books
+        WHERE google_books_id = $1
+            "#,
+            google_books_id as _
+        )
+        .fetch_optional(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        match row {
+            Some(r) => Ok(Some(r.into_book_detail())),
+            None => Ok(None),
+        }
+    }
     async fn create_book(&self, event: CreateBook, user_id: UserId) -> AppResult<BookId> {
         let book_id: BookId = sqlx::query!(
             r#"
