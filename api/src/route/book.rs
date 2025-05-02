@@ -15,7 +15,7 @@ pub fn build_book_routers() -> Router<AppRegistry> {
         .route("/:book_id", get(show_book))
         .route("/:book_id", delete(delete_book))
         .route(
-            "/check/:google_id",
+            "/check/:google_books_id",
             get(check_book_registration),
         );
 
