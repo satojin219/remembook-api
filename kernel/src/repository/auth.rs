@@ -2,7 +2,10 @@ use async_trait::async_trait;
 use shared::error::AppResult;
 
 use crate::model::{
-    auth::{event::CreateToken, AccessToken},
+    auth::{
+        event::{ChangeEmail, ChangePassword, CreateToken},
+        AccessToken,
+    },
     id::UserId,
 };
 
@@ -16,4 +19,6 @@ pub trait AuthRepository: Send + Sync {
     async fn register_user(&self, name: &str, email: &str, password: &str) -> AppResult<UserId>;
     async fn create_token(&self, event: CreateToken) -> AppResult<AccessToken>;
     async fn delete_token(&self, access_token: &AccessToken) -> AppResult<()>;
+    async fn change_email(&self, event: ChangeEmail) -> AppResult<()>;
+    async fn change_password(&self, event: ChangePassword) -> AppResult<()>;
 }

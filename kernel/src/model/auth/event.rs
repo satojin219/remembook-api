@@ -15,3 +15,17 @@ impl CreateToken {
         }
     }
 }
+
+#[derive(Debug)]
+pub struct ChangeEmail {
+    pub user_id: UserId,
+    pub new_email: String,
+    pub old_email: String,
+}
+
+#[derive(Debug)]
+pub struct ChangePassword {
+    pub user_id: UserId,
+    pub new_password: String,
+    pub old_password: String,
+}

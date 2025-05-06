@@ -1,6 +1,6 @@
 use axum::{extract::State, http::StatusCode, Json};
 use kernel::model::{
-    auth::event::CreateToken,
+    auth::event::{ChangeEmail, ChangePassword, CreateToken},
     coin::{event::CreateCoin, CoinType},
 };
 use registry::AppRegistry;
@@ -8,7 +8,7 @@ use shared::error::AppResult;
 
 use crate::{
     extractor::AuthorizedUser,
-    model::auth::{AccessTokenResponse, LoginRequest, SignupRequest},
+    model::auth::{AccessTokenResponse, ChangeEmailRequest, ChangePasswordRequest, LoginRequest, SignupRequest},
 };
 
 pub async fn signup(
@@ -68,6 +68,38 @@ pub async fn logout(
     registry
         .auth_repository()
         .delete_token(&user.access_token)
+        .await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn change_email(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+    Json(req): Json<ChangeEmailRequest>,
+) -> AppResult<StatusCode> {
+    registry
+        .auth_repository()
+        .change_email(ChangeEmail {
+            user_id: user.id(),
+            new_email: req.new_email,
+            old_email: req.old_email,
+        })
+        .await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn change_password(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+    Json(req): Json<ChangePasswordRequest>,
+) -> AppResult<StatusCode> {
+    registry
+        .auth_repository()
+        .change_password(ChangePassword {
+            user_id: user.id(),
+            new_password: req.new_password,
+            old_password: req.old_password,
+        })
         .await?;
     Ok(StatusCode::NO_CONTENT)
 }

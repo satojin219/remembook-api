@@ -4,7 +4,10 @@ use async_trait::async_trait;
 use derive_new::new;
 use kernel::{
     model::{
-        auth::{event::CreateToken, AccessToken},
+        auth::{
+            event::{ChangeEmail, ChangePassword, CreateToken},
+            AccessToken,
+        },
         id::UserId,
     },
     repository::auth::AuthRepository,
@@ -43,7 +46,7 @@ impl AuthRepository for AuthRepositoryImpl {
     async fn verify_user(&self, email: &str, password: &str) -> AppResult<UserId> {
         let user_item = sqlx::query_as!(
             UserItem,
-            r#"SELECT user_id,password_hash FROM users WHERE email = $1;"#,
+            r#"SELECT user_id,password_hash,email FROM users WHERE email = $1;"#,
             email
         )
         .fetch_one(self.db.inner_ref())
@@ -88,6 +91,70 @@ impl AuthRepository for AuthRepositoryImpl {
     async fn delete_token(&self, access_token: &AccessToken) -> AppResult<()> {
         let key: AuthorizationKey = access_token.into();
         self.kv.delete(&key).await
+    }
+
+    async fn change_email(&self, event: ChangeEmail) -> AppResult<()> {
+        let user_item = sqlx::query_as!(
+            UserItem,
+            r#"SELECT user_id,email,password_hash FROM users WHERE user_id = $1;"#,
+            event.user_id as _
+        )
+        .fetch_one(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        let valid = event.old_email == user_item.email;
+
+        if !valid {
+            return Err(AppError::UnauthenticatedError);
+        }
+
+        sqlx::query!(
+            r#"
+            UPDATE users
+            SET email =  $1
+            WHERE user_id = $2
+        "#,
+            event.new_email,
+            event.user_id as _
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        Ok(())
+    }
+
+    async fn change_password(&self, event: ChangePassword) -> AppResult<()> {
+        let user_item = sqlx::query_as!(
+            UserItem,
+            r#"SELECT user_id,password_hash,email FROM users WHERE user_id = $1;"#,
+            event.user_id as _
+        )
+        .fetch_one(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        let valid = bcrypt::verify(event.old_password, &user_item.password_hash)?;
+        if !valid {
+            return Err(AppError::UnauthenticatedError);
+        }
+        let hashed_password = hash_password(&event.new_password)?;
+
+        sqlx::query!(
+            r#"
+            UPDATE users
+            SET password_hash =  $1
+            WHERE user_id = $2
+        "#,
+            hashed_password,
+            event.user_id as _
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(AppError::SpecificOperationError)?;
+
+        Ok(())
     }
 }
 

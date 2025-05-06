@@ -10,6 +10,7 @@ use crate::redis::model::{RedisKey, RedisValue};
 
 pub struct UserItem {
     pub user_id: UserId,
+    pub email: String,
     pub password_hash: String,
 }
 

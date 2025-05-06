@@ -4,7 +4,6 @@ use axum::{async_trait, RequestPartsExt};
 use axum_extra::headers::authorization::Bearer;
 use axum_extra::headers::Authorization;
 use axum_extra::TypedHeader;
-use chrono::{Duration, Utc};
 use kernel::model::auth::AccessToken;
 use kernel::model::coin::event::CreateCoin;
 use kernel::model::coin::CoinType;

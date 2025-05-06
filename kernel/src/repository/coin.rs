@@ -4,7 +4,7 @@ use shared::error::AppResult;
 use crate::model::{
     coin::{
         event::{ConsumeCoin, CreateCoin},
-        Coin, CoinHistory,
+        CoinHistory,
     },
     id::{CoinId, UserId},
 };

@@ -1,4 +1,6 @@
+use axum::http::StatusCode;
 use axum::{extract::State, Json};
+use kernel::model::user::event::DeleteUser;
 use registry::AppRegistry;
 use shared::error::{AppError, AppResult};
 
@@ -27,4 +29,21 @@ pub async fn get_me(
     };
 
     Ok(Json(user_response))
+}
+
+pub async fn delete_user(
+    user: AuthorizedUser,
+    State(registry): State<AppRegistry>,
+) -> AppResult<StatusCode> {
+    registry
+        .auth_repository()
+        .delete_token(&user.access_token)
+        .await?;
+
+    registry
+        .user_repository()
+        .delete(DeleteUser { user_id: user.id() })
+        .await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
