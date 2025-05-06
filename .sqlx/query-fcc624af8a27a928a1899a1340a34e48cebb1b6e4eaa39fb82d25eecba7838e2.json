@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT user_id,password_hash FROM users WHERE email = $1;",
+  "query": "SELECT user_id,email,password_hash FROM users WHERE user_id = $1;",
   "describe": {
     "columns": [
       {
@@ -10,19 +10,25 @@
       },
       {
         "ordinal": 1,
+        "name": "email",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
         "name": "password_hash",
         "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Uuid"
       ]
     },
     "nullable": [
       false,
+      false,
       false
     ]
   },
-  "hash": "08fed4d3699921226400d00a6e1708f84c1832894e6672c8f3ff56b3f1f40f36"
+  "hash": "fcc624af8a27a928a1899a1340a34e48cebb1b6e4eaa39fb82d25eecba7838e2"
 }
