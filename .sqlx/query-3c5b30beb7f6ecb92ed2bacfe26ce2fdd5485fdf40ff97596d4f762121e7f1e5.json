@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT\n            book_id,\n            google_books_id\n        FROM books\n        WHERE google_books_id = $1\n            ",
+  "query": "\n        SELECT\n            book_id,\n            google_books_id\n        FROM books\n        WHERE google_books_id = $1 AND user_id = $2\n            ",
   "describe": {
     "columns": [
       {
@@ -16,7 +16,8 @@
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Text",
+        "Uuid"
       ]
     },
     "nullable": [
@@ -24,5 +25,5 @@
       false
     ]
   },
-  "hash": "8f56d947a8571a2d36df1c9349f6234819db3cfc57cd38daff8cb21a7a3278b7"
+  "hash": "3c5b30beb7f6ecb92ed2bacfe26ce2fdd5485fdf40ff97596d4f762121e7f1e5"
 }

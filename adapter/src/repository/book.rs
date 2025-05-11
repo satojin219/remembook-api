@@ -68,6 +68,7 @@ impl BookRepository for BookRepositoryImpl {
     async fn get_by_google_books_id(
         &self,
         google_books_id: String,
+        user_id: UserId,
     ) -> AppResult<Option<BookDetail>> {
         let row: Option<BookDetailRow> = sqlx::query_as!(
             BookDetailRow,
@@ -76,9 +77,10 @@ impl BookRepository for BookRepositoryImpl {
             book_id,
             google_books_id
         FROM books
-        WHERE google_books_id = $1
+        WHERE google_books_id = $1 AND user_id = $2
             "#,
-            google_books_id as _
+            google_books_id as _,
+            user_id as _
         )
         .fetch_optional(self.db.inner_ref())
         .await
