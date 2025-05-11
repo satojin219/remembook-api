@@ -88,13 +88,12 @@ pub async fn check_book_registration(
     user: AuthorizedUser,
     Path(google_books_id): Path<String>,
     State(registry): State<AppRegistry>,
-) -> AppResult<Json<BookId>> {
+) -> AppResult<Json<Option<BookId>>> {
     let book_id = registry
         .book_repository()
         .get_by_google_books_id(google_books_id, user.id())
         .await?
-        .map(|b| b.id)
-        .unwrap_or_default();
+        .map(|b| b.id);
 
     Ok(Json(book_id))
 }
