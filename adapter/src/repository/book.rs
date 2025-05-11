@@ -79,7 +79,7 @@ impl BookRepository for BookRepositoryImpl {
         FROM books
         WHERE google_books_id = $1 AND user_id = $2
             "#,
-            google_books_id as _,
+            google_books_id,
             user_id as _
         )
         .fetch_optional(self.db.inner_ref())
