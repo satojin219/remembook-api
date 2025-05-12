@@ -15,7 +15,12 @@ use axum::{
 };
 use garde::Validate;
 use kernel::model::{
-    answer::event::CreateAnswer, book::event::CreateBook, coin::event::ConsumeCoin, id::{BookId, MemoId, QuestionId}, memo::event::{DeleteMemo, UpdateMemo}, question::event::UpdateQuestion
+    answer::event::CreateAnswer,
+    book::event::CreateBook,
+    coin::event::ConsumeCoin,
+    id::{BookId, MemoId, QuestionId},
+    memo::event::{DeleteMemo, UpdateMemo},
+    question::event::UpdateQuestion,
 };
 use registry::AppRegistry;
 use shared::{
@@ -30,17 +35,26 @@ pub async fn create_memo(
 ) -> AppResult<StatusCode> {
     req.validate(&())?;
 
-    let create_book_event = CreateBook {
-        title: req.title.clone(),
-        author: req.author.clone(),
-        image_url: req.image_url.clone(),
-        google_books_id: req.google_books_id.clone(),
-    };
-
     let book_id = registry
         .book_repository()
-        .create_book(create_book_event, user.id())
+        .get_by_google_books_id(req.google_books_id.clone(), user.id())
         .await?;
+
+    let book_id = match book_id {
+        Some(book_detail) => book_detail.id,
+        None => {
+            let create_book_event = CreateBook {
+                title: req.title.clone(),
+                author: req.author.clone(),
+                image_url: req.image_url.clone(),
+                google_books_id: req.google_books_id.clone(),
+            };
+            registry
+                .book_repository()
+                .create_book(create_book_event, user.id())
+                .await?
+        }
+    };
 
     let create_memo_event = CreateMemoRequestWithIds(user.id(), book_id, req.clone());
 
