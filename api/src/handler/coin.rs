@@ -25,10 +25,11 @@ pub async fn create_coin(
     Json(req): Json<CreateCoinRequest>,
 ) -> Result<StatusCode, AppError> {
     req.validate(&())?;
+    // コインは5枚単位で購入でき、1回の決済につき最低5枚から購入するので、数量✖️5で登録する
     let coin = CreateCoin {
         user_id: user.id(),
         session_id: Some(req.session_id),
-        amount: req.amount,
+        amount: req.amount * 5,
         coin_type: CoinType::from_str(&req.coin_type).unwrap(),
     };
     registry.coin_repository().create_coin(coin).await?;
