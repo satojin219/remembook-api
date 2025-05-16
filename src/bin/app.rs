@@ -1,7 +1,12 @@
 use adapter::{database::connect_database_with, redis::RedisClient};
 use anyhow::{Ok, Result};
 use api::route::{auth, v1};
-use axum::{http::Method, Router};
+use axum::{
+    extract::State,
+    http::{HeaderValue, Method, StatusCode},
+    routing::{get, post},
+    Router,
+};
 use registry::AppRegistryImpl;
 use shared::{
     config::AppConfig,
@@ -10,6 +15,7 @@ use shared::{
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
+    time::Duration,
 };
 use tokio::net::TcpListener;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
@@ -70,7 +76,6 @@ async fn bootstrap() -> Result<()> {
         )
         .with_state(registry);
 
-    
     let host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
     let ip_addr = host
         .parse::<IpAddr>()
@@ -87,8 +92,19 @@ async fn bootstrap() -> Result<()> {
 }
 
 fn cors() -> CorsLayer {
+    let client_api = std::env::var("REMEMBOOK_CLIENT_API").unwrap_or_else(|_| {
+        println!("REMEMBOOK_CLIENT_API is not set. CORS will be disabled.");
+        "".to_string()
+    });
+
+    let origins = if client_api.is_empty() {
+        vec![]
+    } else {
+        vec![client_api.parse::<HeaderValue>().unwrap()]
+    };
+
     CorsLayer::new()
         .allow_headers(cors::Any)
         .allow_methods(vec![Method::GET, Method::POST, Method::PUT, Method::DELETE])
-        .allow_origin(cors::Any)
+        .allow_origin(origins)
 }
