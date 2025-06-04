@@ -25,6 +25,7 @@ pub async fn create_coin(
     Json(req): Json<CreateCoinRequest>,
 ) -> Result<StatusCode, AppError> {
     req.validate(&())?;
+
     let coin = CreateCoin {
         user_id: user.id(),
         session_id: Some(req.session_id),
@@ -32,6 +33,19 @@ pub async fn create_coin(
         coin_type: CoinType::from_str(&req.coin_type).unwrap(),
     };
     registry.coin_repository().create_coin(coin).await?;
+
+    // 50、100枚の購入の時はボーナスで購入枚数の10%を無料で付与する
+    if req.amount > 10 {
+        let bonus_amount = req.amount / 10;
+        let bonus_coin = CreateCoin {
+            user_id: user.id(),
+            session_id: None,
+            amount: bonus_amount,
+            coin_type: CoinType::Free,
+        };
+        registry.coin_repository().create_coin(bonus_coin).await?;
+    }
+
     Ok(StatusCode::CREATED)
 }
 
