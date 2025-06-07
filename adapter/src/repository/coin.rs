@@ -132,9 +132,15 @@ impl CoinRepository for CoinRepositoryImpl {
             r#"
             UPDATE coins
             SET used_amount = used_amount + $1
-            WHERE user_id = $2
-            AND created_at + INTERVAL '180 days' > NOW()
-            AND purchased_amount - used_amount >= $1
+            WHERE coin_id = (
+                SELECT coin_id
+                FROM coins
+                WHERE user_id = $2
+                AND created_at + INTERVAL '180 days' > NOW()
+                AND purchased_amount - used_amount >= $1
+                ORDER BY created_at ASC
+                LIMIT 1
+            )
             RETURNING 
                 coin_id,
                 user_id,
